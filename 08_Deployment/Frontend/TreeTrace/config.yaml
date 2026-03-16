@@ -1,0 +1,9 @@
+# Configuration file
+model:
+  name: "treetrace"
+  version: "0.1.0"
+
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001

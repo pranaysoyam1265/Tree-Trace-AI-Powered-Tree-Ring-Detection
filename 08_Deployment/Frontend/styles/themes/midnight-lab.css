@@ -1,0 +1,60 @@
+/* Midnight Lab Theme */
+[data-theme="midnight"] {
+  /* Backgrounds (Layered Depth) */
+  --bg-void: #060810;
+  --bg-base: #0B0E14;
+  --bg-raised: #131820;
+  --bg-surface: #1A2030;
+  --bg-overlay: #232B3E;
+  --bg-highlight: #2C364C;
+
+  /* Primary Accent — Cyan */
+  --accent-primary: #22D3EE;
+  --accent-secondary: #A78BFA;
+
+  /* Text Colors */
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --text-disabled: #475569;
+  --text-inverse: #0B0E14;
+
+  --text-terminal: #22D3EE;
+  --text-terminal-dim: rgba(34, 211, 238, 0.5);
+  --text-mono: #A5B4FC;
+
+  /* Borders */
+  --border-subtle: rgba(35, 43, 62, 0.2);
+  --border-default: #2C364C;
+  --border-strong: #3B4863;
+  --border-accent: rgba(34, 211, 238, 0.3);
+  --border-accent-full: #22D3EE;
+  --border-divider: #1E2536;
+
+  /* Status Colors */
+  --status-success: #10B981;
+  --status-success-bg: rgba(6, 78, 59, 0.2);
+  --status-success-text: #6EE7B7;
+
+  --status-warning: #F59E0B;
+  --status-warning-bg: rgba(120, 53, 15, 0.2);
+  --status-warning-text: #FCD34D;
+
+  --status-error: #EF4444;
+  --status-error-bg: rgba(127, 29, 29, 0.2);
+  --status-error-text: #FCA5A5;
+
+  /* Chart Colors */
+  --chart-primary: #22D3EE;
+  --chart-secondary: #A78BFA;
+  --chart-tertiary: #38BDF8;
+  --chart-quaternary: #C084FC;
+  --chart-grid: rgba(35, 43, 62, 0.4);
+  --chart-axis: #475569;
+  --chart-tooltip-bg: #131820;
+
+  /* Special Effects */
+  --glow-primary: 0 0 20px rgba(34, 211, 238, 0.25), 0 0 40px rgba(34, 211, 238, 0.125);
+  --glow-secondary: 0 0 20px rgba(167, 139, 250, 0.25), 0 0 40px rgba(167, 139, 250, 0.125);
+  --scanline: rgba(34, 211, 238, 0.08);
+}

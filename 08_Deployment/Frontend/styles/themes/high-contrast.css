@@ -1,0 +1,69 @@
+/* High Contrast Theme */
+[data-theme="contrast"] {
+  /* Backgrounds (Perfect Black) */
+  --bg-void: #000000;
+  --bg-base: #000000;
+  --bg-raised: #0A0A0A;
+  --bg-surface: #141414;
+  --bg-overlay: #1F1F1F;
+  --bg-highlight: #2A2A2A;
+
+  /* Primary Accent — Neon Green */
+  --accent-primary: #00FF88;
+  --accent-secondary: #FFFF00;
+  /* Pure yellow */
+
+  /* Text Colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-tertiary: #999999;
+  --text-disabled: #666666;
+  --text-inverse: #000000;
+
+  --text-terminal: #00FF88;
+  --text-terminal-dim: #00FF88;
+  /* No dim in contrast mode */
+  --text-mono: #FFFFFF;
+
+  /* Borders */
+  --border-subtle: #333333;
+  --border-default: #555555;
+  --border-strong: #FFFFFF;
+  --border-accent: #00FF88;
+  /* Full opacity */
+  --border-accent-full: #00FF88;
+  --border-divider: #333333;
+
+  /* Status Colors */
+  --status-success: #00FF00;
+  --status-success-bg: #000000;
+  --status-success-text: #00FF00;
+
+  --status-warning: #FFFF00;
+  --status-warning-bg: #000000;
+  --status-warning-text: #FFFF00;
+
+  --status-error: #FF0000;
+  --status-error-bg: #000000;
+  --status-error-text: #FF0000;
+
+  --status-info: #00FFFF;
+  --status-info-bg: #000000;
+  --status-info-text: #00FFFF;
+
+  /* Chart Colors */
+  --chart-primary: #00FF88;
+  --chart-secondary: #FFFF00;
+  --chart-tertiary: #00FFFF;
+  --chart-quaternary: #FF00FF;
+  --chart-grid: #333333;
+  --chart-axis: #FFFFFF;
+  --chart-tooltip-bg: #000000;
+
+  /* Special Effects (Disabled for contrast) */
+  --glow-primary: none;
+  --glow-secondary: none;
+  --scanline: transparent;
+  --noise-opacity: 0;
+  --grid-opacity: 0;
+}

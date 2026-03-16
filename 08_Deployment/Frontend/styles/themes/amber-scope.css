@@ -1,0 +1,48 @@
+/* Amber Scope Theme */
+[data-theme="amber"] {
+  /* Backgrounds (Layered Depth) */
+  --bg-void: #080604;
+  --bg-base: #0F0C08;
+  --bg-raised: #1A1510;
+  --bg-surface: #241E16;
+  --bg-overlay: #30281F;
+  --bg-highlight: #40352A;
+
+  /* Primary Accent — Amber */
+  --accent-primary: #F59E0B;
+  --accent-secondary: #10B981;
+  /* Green fallback for status */
+
+  /* Text Colors */
+  --text-primary: #F5E6D3;
+  --text-secondary: #D4BFA5;
+  --text-tertiary: #A68F74;
+  --text-disabled: #6E5C4A;
+  --text-inverse: #0F0C08;
+
+  --text-terminal: #F59E0B;
+  --text-terminal-dim: rgba(245, 158, 11, 0.5);
+  --text-mono: #E8CCAA;
+
+  /* Borders */
+  --border-subtle: rgba(48, 40, 31, 0.2);
+  --border-default: #40352A;
+  --border-strong: #5A4A3B;
+  --border-accent: rgba(245, 158, 11, 0.3);
+  --border-accent-full: #F59E0B;
+  --border-divider: #261F17;
+
+  /* Chart Colors */
+  --chart-primary: #F59E0B;
+  --chart-secondary: #D97706;
+  --chart-tertiary: #FBBF24;
+  --chart-quaternary: #92400E;
+  --chart-grid: rgba(48, 40, 31, 0.4);
+  --chart-axis: #6E5C4A;
+  --chart-tooltip-bg: #1A1510;
+
+  /* Special Effects */
+  --glow-primary: 0 0 20px rgba(245, 158, 11, 0.25), 0 0 40px rgba(245, 158, 11, 0.125);
+  --glow-secondary: 0 0 20px rgba(16, 185, 129, 0.25), 0 0 40px rgba(16, 185, 129, 0.125);
+  --scanline: rgba(245, 158, 11, 0.08);
+}

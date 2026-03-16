@@ -1,0 +1,103 @@
+# ================================
+# NODE / NEXT.JS (Frontend)
+# ================================
+node_modules/
+.next/
+.vercel/
+out/
+build/
+dist/
+
+# Next.js cache
+.next/cache/
+
+# ================================
+# PYTHON (Backend + Scripts)
+# ================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+ENV/
+.conda/
+
+# ================================
+# ENVIRONMENT VARIABLES
+# ================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+!.env.template
+
+# ================================
+# LARGE DATA / ML FILES
+# ================================
+# Raw data images (large)
+01_Raw_Data/URuDendro/images/
+
+# Model weights (large binary files)
+05_Models/*.pth
+05_Models/*.h5
+05_Models/*.pkl
+05_Models/*.bin
+
+# Output files (generated, not source)
+07_Outputs/cstrd_results/*/
+07_Outputs/evaluation_results/*/
+07_Outputs/streamlit_results/*/
+
+# ================================
+# OS FILES
+# ================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ================================
+# IDE / EDITOR
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ================================
+# LOGS
+# ================================
+12_Logs/*.log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ================================
+# MISC
+# ================================
+*.tmp
+*.temp
+.cache/

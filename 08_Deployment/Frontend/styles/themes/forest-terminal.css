@@ -1,0 +1,88 @@
+/* ═══════════════════════════════════════════════════════════════════
+   BRUTALIST INDUSTRIAL THEME (Default)
+   Dark Industrial Brutalist — Scientific Monitoring Terminal
+   ═══════════════════════════════════════════════════════════════════ */
+:root,
+[data-theme="forest"] {
+  /* Backgrounds (Layered Depth) */
+  --bg-void: #0a0a0a;
+  --bg-base: #0a0a0a;
+  --bg-raised: #1a1a1a;
+  --bg-surface: #141414;
+  --bg-overlay: #1a1a1a;
+  --bg-highlight: #1f1f1f;
+
+  /* Primary Accent — Industrial Orange */
+  --accent-primary: #ea580c;
+  --accent-secondary: #f97316;
+
+  /* Extended accent palette */
+  --color-accent-hover: #f97316;
+  --color-accent-dim: rgba(234, 88, 12, 0.25);
+  --color-accent-glow: rgba(234, 88, 12, 0.5);
+  --color-accent-dark: #c2410c;
+
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #555555;
+  --text-disabled: #333333;
+  --text-inverse: #0a0a0a;
+
+  --text-terminal: #ea580c;
+  --text-terminal-dim: rgba(234, 88, 12, 0.5);
+  --text-amber: #ea580c;
+  --text-mono: #a3a3a3;
+
+  /* Status Colors */
+  --status-success: #22c55e;
+  --status-success-bg: rgba(34, 197, 94, 0.1);
+  --status-success-text: #22c55e;
+
+  --status-warning: #eab308;
+  --status-warning-bg: rgba(234, 179, 8, 0.1);
+  --status-warning-text: #eab308;
+
+  --status-error: #ef4444;
+  --status-error-bg: rgba(239, 68, 68, 0.1);
+  --status-error-text: #ef4444;
+  --error-red: #ef4444;
+
+  --status-info: #ea580c;
+  --status-info-bg: rgba(234, 88, 12, 0.1);
+  --status-info-text: #ea580c;
+
+  --status-processing: #ea580c;
+  --status-processing-bg: rgba(234, 88, 12, 0.1);
+
+  /* Border Colors */
+  --border-subtle: #222222;
+  --border-default: #333333;
+  --border-strong: #555555;
+  --border-accent: rgba(234, 88, 12, 0.4);
+  --border-accent-full: #ea580c;
+  --border-divider: #222222;
+
+  /* Chart Colors */
+  --chart-primary: #ea580c;
+  --chart-secondary: #f97316;
+  --chart-tertiary: #fb923c;
+  --chart-quaternary: #a3a3a3;
+  --chart-grid: rgba(51, 51, 51, 0.4);
+  --chart-axis: #555555;
+  --chart-tooltip-bg: #1a1a1a;
+
+  /* Brutalist Special Effects */
+  --glow-primary: none;
+  --glow-secondary: none;
+  --scanline: rgba(234, 88, 12, 0.08);
+  --noise-opacity: 0;
+  --grid-opacity: 0;
+
+  /* Shadows */
+  --shadow-brutal: 4px 4px 0px 0px rgba(234, 88, 12, 1);
+  --shadow-brutal-sm: 2px 2px 0px 0px rgba(234, 88, 12, 1);
+  --shadow-brutal-white: 4px 4px 0px 0px rgba(255, 255, 255, 0.2);
+  --shadow-brutal-lg: 8px 8px 0px 0px rgba(234, 88, 12, 1);
+  --shadow-brutal-red: 4px 4px 0px 0px rgba(239, 68, 68, 0.5);
+}

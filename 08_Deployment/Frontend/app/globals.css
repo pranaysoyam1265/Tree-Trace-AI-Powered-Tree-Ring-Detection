@@ -1,0 +1,257 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@import '../styles/themes/forest-terminal.css';
+@import '../styles/themes/midnight-lab.css';
+@import '../styles/themes/amber-scope.css';
+@import '../styles/themes/high-contrast.css';
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant midnight (&:is([data-theme="midnight"] *));
+@custom-variant amber (&:is([data-theme="amber"] *));
+@custom-variant contrast (&:is([data-theme="contrast"] *));
+
+@theme inline {
+  --font-sans: 'JetBrains Mono', 'Fira Code', 'Space Mono', 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Space Mono', 'Courier New', monospace;
+  --font-pixel: var(--font-pixel), 'Courier New', monospace;
+
+  /* Background Colors */
+  --color-bg-void: var(--bg-void);
+  --color-bg-base: var(--bg-base);
+  --color-bg-raised: var(--bg-raised);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-overlay: var(--bg-overlay);
+  --color-bg-highlight: var(--bg-highlight);
+  --color-bg-modifier-hover: var(--bg-highlight);
+  --color-bg-input: var(--bg-void);
+  --color-bg-hover: var(--bg-highlight);
+  --color-bg-selected: #1a1000;
+
+  /* Accent Colors */
+  --color-accent: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+
+  /* Text Colors */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-terminal: var(--text-terminal);
+  --color-text-terminal-dim: var(--text-terminal-dim);
+  --color-text-mono: var(--text-mono);
+
+  /* Status Colors */
+  --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-text: var(--status-success-text);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-text: var(--status-warning-text);
+  --color-status-error: var(--status-error);
+  --color-status-error-bg: var(--status-error-bg);
+  --color-status-error-text: var(--status-error-text);
+  --color-status-info: var(--status-info);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-text: var(--status-info-text);
+  --color-status-processing: var(--status-processing);
+  --color-status-processing-bg: var(--status-processing-bg);
+
+  /* Border Colors */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-accent: var(--border-accent);
+  --color-border-accent-full: var(--border-accent-full);
+  --color-border-divider: var(--border-divider);
+
+  /* Zero border radius system-wide */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+
+  /* Brutal box shadows */
+  --shadow-brutal: var(--shadow-brutal);
+  --shadow-brutal-sm: var(--shadow-brutal-sm);
+  --shadow-brutal-white: var(--shadow-brutal-white);
+  --shadow-brutal-lg: var(--shadow-brutal-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BRUTALIST RESET — Force zero radius, monospace, kill transitions
+   ═══════════════════════════════════════════════════════════════════ */
+
+@layer base {
+
+  /* Force zero border-radius on EVERYTHING */
+  *,
+  *::before,
+  *::after {
+    border-radius: 0px !important;
+  }
+
+  * {
+    @apply border-border-default outline-accent/50;
+    /* Kill all smooth transitions globally */
+    transition-property: none !important;
+    transition-duration: 0ms !important;
+  }
+
+  /* Exception: allow opacity transitions on explicitly opted-in elements */
+  .allow-transition {
+    transition-property: opacity !important;
+    transition-duration: 150ms !important;
+  }
+
+  body {
+    @apply bg-bg-base text-text-primary;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Space Mono', 'Courier New', monospace;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BRUTALIST UTILITIES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Glass utilities → replaced with solid brutalist panels */
+.glass,
+.glass-card,
+.glass-subtle {
+  background: #141414;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 2px solid #333333;
+}
+
+.glass-border {
+  border: 2px solid #333333;
+}
+
+/* Kill all glow effects */
+.glow-primary,
+.glow-secondary,
+.glow-accent,
+.illustration-glow,
+.illustration-glow-strong {
+  box-shadow: none;
+  filter: none;
+}
+
+/* CRT effects → replaced with nothing */
+.crt-glow {
+  box-shadow: none;
+}
+
+.crt-curve {
+  border-radius: 0px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BRUTALIST ANIMATIONS — Only blinking and hard-cut allowed
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes blink {
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Scanline — kept for terminal aesthetics but faster */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+/* Scanline overlay — kept but dimmed */
+.scanlines {
+  position: relative;
+}
+
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Kill decorative animations */
+.dither-shimmer,
+.terminal-flicker,
+.terminal-flicker-med {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-blink,
+  .animate-scanline {
+    animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SELECTION & SCROLLBAR — Brutalist Orange
+   ═══════════════════════════════════════════════════════════════════ */
+
+::selection {
+  background: #ea580c;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border: 1px solid #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FOCUS — Brutalist orange square outline
+   ═══════════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+}
