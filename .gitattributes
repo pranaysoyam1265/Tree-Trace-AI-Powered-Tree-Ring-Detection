@@ -2,3 +2,5 @@
 *.h5 filter=lfs diff=lfs merge=lfs -text
 *.pkl filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
+01_Raw_Data/**/*.png filter=lfs diff=lfs merge=lfs -text
+01_Raw_Data/**/*.jpg filter=lfs diff=lfs merge=lfs -text
