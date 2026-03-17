@@ -1,0 +1,7 @@
+{
+  "epochs": 100,
+  "best_dice": 0.37378461480140684,
+  "total_time_minutes": 42.45565605560939,
+  "use_mae": true,
+  "freeze_encoder": true
+}

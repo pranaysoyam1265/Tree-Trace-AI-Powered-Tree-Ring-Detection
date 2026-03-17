@@ -1,0 +1,7 @@
+{
+  "epochs": 100,
+  "best_loss": 0.577471340978972,
+  "total_time_minutes": 135.26700151364008,
+  "num_images": 5828,
+  "device": "cuda"
+}
