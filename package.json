@@ -1,0 +1,12 @@
+{
+  "name": "treetrace-root",
+  "version": "1.0.0",
+  "description": "Root delegation for TreeTrace project",
+  "scripts": {
+    "dev": "npm run dev --prefix 08_Deployment/Frontend",
+    "build": "npm run build --prefix 08_Deployment/Frontend",
+    "start": "npm run start --prefix 08_Deployment/Frontend",
+    "lint": "npm run lint --prefix 08_Deployment/Frontend",
+    "install-frontend": "npm install --prefix 08_Deployment/Frontend"
+  }
+}

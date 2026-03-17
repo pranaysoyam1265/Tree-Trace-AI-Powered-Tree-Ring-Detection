@@ -1,6 +1,6 @@
 "use client"
 
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { Leaf } from "lucide-react"
 
 interface Props {
@@ -8,12 +8,13 @@ interface Props {
 }
 
 export function EcologyCard({ result }: Props) {
-  const { ecology } = result
+  const { carbon } = result
 
   const rows = [
-    { label: "BIOMASS", value: `${ecology.biomassKg} kg`, sub: "Above-ground estimate" },
-    { label: "CARBON (CO₂)", value: `${ecology.carbonKgCo2} kg`, sub: "Sequestered lifetime" },
-    { label: "EST. DBH", value: `${ecology.estimatedDbhCm} cm`, sub: "Diameter at breast height" },
+    { label: "BIOMASS", value: `${carbon.estimated_biomass_kg.toFixed(1)} kg`, sub: "Above-ground estimate" },
+    { label: "CARBON STORED", value: `${carbon.carbon_stored_kg.toFixed(1)} kg`, sub: "Carbon sequestered" },
+    { label: "CO₂ EQUIV.", value: `${carbon.co2_equivalent_kg.toFixed(1)} kg`, sub: "Lifetime offset" },
+    { label: "CAR KM OFFSET", value: `${carbon.car_km_offset.toFixed(0)} km`, sub: "Driving equivalent" },
   ]
 
   return (

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { ArrowLeft, Share2, Clock, Check } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 
@@ -19,8 +19,10 @@ export function ResultsHeader({ result }: Props) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Relative time
-  const ago = getRelativeTime(result.timestamp)
+  const ago = getRelativeTime(result.analyzed_at)
+
+  const confidenceLabel = result.health.label === "Excellent" || result.health.label === "Good"
+    ? "high" : result.health.label === "Fair" ? "medium" : "low"
 
   return (
     <div className="border border-border bg-background px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative">
@@ -44,7 +46,7 @@ export function ResultsHeader({ result }: Props) {
 
         <div className="flex flex-col">
           <span className="font-mono text-sm font-bold text-foreground uppercase tracking-[1px]">
-            {result.imageName}
+            {result.image_name}
           </span>
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase text-muted-foreground tracking-[1px] mt-1">
             <span className="flex items-center gap-1">
@@ -52,11 +54,9 @@ export function ResultsHeader({ result }: Props) {
               {ago}
             </span>
             <span>│</span>
-            <span>SENS: {result.config.sensitivity}</span>
+            <span>PITH: ({result.pith.cx}, {result.pith.cy})</span>
             <span>│</span>
-            <span>DENOISE: {result.config.denoising}</span>
-            <span>│</span>
-            <span>PITH: {result.config.autoPith ? "AUTO" : "MANUAL"}</span>
+            <span>BORN: ~{result.birth_year}</span>
           </div>
         </div>
       </div>
@@ -64,17 +64,17 @@ export function ResultsHeader({ result }: Props) {
       {/* Right — badges + share */}
       <div className="flex items-center gap-3">
         <span className="font-mono text-[10px] uppercase tracking-[1px] font-bold text-accent border border-accent/50 bg-accent/10 px-2 py-1">
-          {result.ringCount} RINGS
+          {result.ring_count} RINGS
         </span>
         <span className={cn(
           "font-mono text-[10px] uppercase tracking-[1px] font-bold px-2 py-1 border",
-          result.confidence === "high"
+          confidenceLabel === "high"
             ? "text-status-success border-status-success/30 bg-status-success/10"
-            : result.confidence === "medium"
+            : confidenceLabel === "medium"
               ? "text-status-warning border-status-warning/30 bg-status-warning/10"
               : "text-status-error border-status-error/30 bg-status-error/10"
         )}>
-          {result.confidence} CONFIDENCE
+          {result.health.label.toUpperCase()}
         </span>
 
         <div className="w-px h-5 bg-border mx-1 hidden sm:block" />

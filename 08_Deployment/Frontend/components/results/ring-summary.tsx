@@ -3,7 +3,7 @@
 import { motion, useMotionValue, useTransform, animate } from "framer-motion"
 import { useEffect, useRef } from "react"
 import { TreePine, Clock, Target, BarChart3, Ruler } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -41,24 +41,24 @@ export function RingSummary({ result }: Props) {
             <TreePine className="h-3 w-3 text-accent" /> // RINGS_DETECTED
           </span>
           <span className="font-mono text-6xl md:text-7xl font-bold text-accent tabular-nums tracking-tighter">
-            <AnimatedCounter value={result.ringCount} />
+            <AnimatedCounter value={result.ring_count} />
           </span>
           <span className="font-mono text-xs text-muted-foreground uppercase tracking-[1px] mt-1">
-            EST. AGE: ~{result.estimatedAge} YRS
+            EST. AGE: ~{result.estimated_age} YRS
           </span>
           <span className={cn(
             "mt-2 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold px-3 py-1 border uppercase tracking-[1px]",
-            result.confidence === "high"
+            result.health.label === "Excellent" || result.health.label === "Good"
               ? "text-status-success border-status-success/30 bg-status-success/10"
-              : result.confidence === "medium"
+              : result.health.label === "Fair"
                 ? "text-status-warning border-status-warning/30 bg-status-warning/10"
                 : "text-status-error border-status-error/30 bg-status-error/10"
           )}>
             <div className={cn(
               "h-1.5 w-1.5",
-              result.confidence === "high" ? "bg-status-success" : result.confidence === "medium" ? "bg-status-warning" : "bg-status-error"
+              result.health.label === "Excellent" || result.health.label === "Good" ? "bg-status-success" : result.health.label === "Fair" ? "bg-status-warning" : "bg-status-error"
             )} />
-            {result.confidence} CONFIDENCE
+            {result.health.label.toUpperCase()}
           </span>
         </div>
 
@@ -71,9 +71,9 @@ export function RingSummary({ result }: Props) {
           {[
             { label: "PRECISION", value: result.metrics.precision ? result.metrics.precision.toFixed(2) : "N/A", icon: Target },
             { label: "RECALL", value: result.metrics.recall ? result.metrics.recall.toFixed(2) : "N/A", icon: BarChart3 },
-            { label: "F1 SCORE", value: result.metrics.f1 ? result.metrics.f1.toFixed(2) : "N/A", icon: Target },
+            { label: "F1 SCORE", value: result.metrics.f1_score ? result.metrics.f1_score.toFixed(2) : "N/A", icon: Target },
             { label: "RMSE", value: result.metrics.rmse ? `${result.metrics.rmse}px` : "N/A", icon: Ruler },
-            { label: "PROCESSING", value: `${result.processingDuration}s`, icon: Clock },
+            { label: "PROCESSING", value: `${result.processing_time_seconds}s`, icon: Clock },
           ].map(({ label, value, icon: Icon }) => (
             <div key={label} className="flex flex-col gap-1 border border-border/50 bg-surface/50 p-3 hover:border-accent/40 transition-colors">
               <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted-foreground flex items-center gap-1.5">
@@ -86,23 +86,23 @@ export function RingSummary({ result }: Props) {
           ))}
 
           {/* Growth Trend — special styling */}
-          {result.statistics && (
+          {result.trend && (
             <div className="flex flex-col gap-1 border border-border/50 bg-surface/50 p-3 hover:border-accent/40 transition-colors">
               <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted-foreground flex items-center gap-1.5">
                 <BarChart3 className="h-3 w-3" /> TREND
               </span>
               <span className={cn(
                 "font-mono text-xl font-bold tabular-nums mt-1",
-                result.statistics.growthTrendDirection === 'increasing' ? 'text-status-success' :
-                  result.statistics.growthTrendDirection === 'declining' ? 'text-status-error' :
+                result.trend.direction.toLowerCase().includes('increas') ? 'text-status-success' :
+                  result.trend.direction.toLowerCase().includes('decreas') ? 'text-status-error' :
                     'text-muted-foreground'
               )}>
-                {result.statistics.growthTrendDirection === 'increasing' ? '▲' :
-                  result.statistics.growthTrendDirection === 'declining' ? '▼' : '──'}{' '}
-                <span className="text-sm">{result.statistics.growthTrendDirection.toUpperCase()}</span>
+                {result.trend.direction.toLowerCase().includes('increas') ? '▲' :
+                  result.trend.direction.toLowerCase().includes('decreas') ? '▼' : '──'}{' '}
+                <span className="text-sm">{result.trend.direction.toUpperCase()}</span>
               </span>
               <span className="font-mono text-[10px] text-muted-foreground">
-                ({result.statistics.growthTrendSlope} PX/YR)
+                ({result.trend.slope.toFixed(2)} PX/YR)
               </span>
             </div>
           )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Sidebar } from "@/components/layout/sidebar"
@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/contexts/auth-context"
 import { CornerAccents } from "@/components/ui/brutal/corner-accents"
 import { Menu, PlusSquare } from "lucide-react"
 import { Logo } from "@/components/brand/logo"
+import { apiClient } from "@/lib/api-client"
 
 /* ═══════════════════════════════════════════════════════════════════
    NAVIGATION — Simplified Brutalist Industrial Navbar
@@ -20,6 +21,13 @@ export function Navigation() {
   const [authOpen, setAuthOpen] = useState(false)
   const { isLoggedIn } = useAuth()
   const pathname = usePathname()
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking')
+
+  useEffect(() => {
+    apiClient.checkHealth()
+      .then(() => setBackendStatus('online'))
+      .catch(() => setBackendStatus('offline'))
+  }, [])
 
   const routeLabel = pathname === "/" ? "/HOME" : pathname.toUpperCase()
 
@@ -54,6 +62,21 @@ export function Navigation() {
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden md:inline font-mono text-[10px] text-[#a3a3a3] tracking-[0.15em]">
               CURRENT: <span className="text-[#ea580c]">{routeLabel}</span>
+            </span>
+
+            {/* Backend status indicator */}
+            <span className="hidden md:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.15em]">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${backendStatus === 'online'
+                    ? 'bg-green-500 shadow-[0_0_6px_#22c55e]'
+                    : backendStatus === 'offline'
+                      ? 'bg-red-500 shadow-[0_0_6px_#ef4444]'
+                      : 'bg-amber-500 animate-pulse'
+                  }`}
+              />
+              <span className={backendStatus === 'online' ? 'text-green-500' : backendStatus === 'offline' ? 'text-red-500' : 'text-amber-500'}>
+                {backendStatus === 'online' ? 'API' : backendStatus === 'offline' ? 'OFFLINE' : '...'}
+              </span>
             </span>
 
             <Link

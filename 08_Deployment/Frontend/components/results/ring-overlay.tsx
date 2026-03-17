@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef } from "react"
 import { Eye, EyeOff, Hash, Crosshair, ZoomIn, ZoomOut, Maximize, Maximize2, Target } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -29,7 +29,7 @@ export function RingOverlay({ result, selectedRing, onSelectRing }: Props) {
 
   const maxRadius = useMemo(() => {
     const last = result.rings[result.rings.length - 1]
-    return last ? last.outerRadius : 200
+    return last ? last.outer_radius_px : 200
   }, [result.rings])
 
   const canvasSize = 480
@@ -141,12 +141,12 @@ export function RingOverlay({ result, selectedRing, onSelectRing }: Props) {
             >
               {showRings &&
                 result.rings.map((ring, i) => {
-                  const isSelected = selectedRing === ring.id
-                  const isHovered = hoverRing === ring.id
-                  const r = ring.outerRadius * scale
+                  const isSelected = selectedRing === ring.ring_number
+                  const isHovered = hoverRing === ring.ring_number
+                  const r = ring.outer_radius_px * scale
                   return (
                     <circle
-                      key={ring.id}
+                      key={ring.ring_number}
                       cx={canvasSize / 2}
                       cy={canvasSize / 2}
                       r={r}
@@ -154,8 +154,8 @@ export function RingOverlay({ result, selectedRing, onSelectRing }: Props) {
                       stroke={ringColor(i, result.rings.length, isSelected || isHovered ? 1 : 0.6)}
                       strokeWidth={isSelected ? 3 : isHovered ? 2 : 1}
                       className="cursor-pointer transition-all duration-75"
-                      onClick={() => onSelectRing(isSelected ? null : ring.id)}
-                      onMouseMove={(e) => handleRingHover(e, ring.id)}
+                      onClick={() => onSelectRing(isSelected ? null : ring.ring_number)}
+                      onMouseMove={(e) => handleRingHover(e, ring.ring_number)}
                       onMouseLeave={() => setHoverRing(null)}
                       style={{ filter: isSelected ? 'drop-shadow(0 0 4px rgba(234,88,12,0.8))' : 'none' }}
                     />
@@ -167,17 +167,17 @@ export function RingOverlay({ result, selectedRing, onSelectRing }: Props) {
                 result.rings
                   .filter((_, i) => i % 2 === 0)
                   .map((ring) => {
-                    const r = ring.outerRadius * scale
+                    const r = ring.outer_radius_px * scale
                     return (
                       <text
-                        key={`label-${ring.id}`}
+                        key={`label-${ring.ring_number}`}
                         x={canvasSize / 2 + r * 0.7}
                         y={canvasSize / 2 - r * 0.7}
                         fill="rgba(255,255,255,0.4)"
                         fontSize={9}
                         fontFamily="monospace"
                       >
-                        {ring.id}
+                        {ring.ring_number}
                       </text>
                     )
                   })}
@@ -216,7 +216,7 @@ export function RingOverlay({ result, selectedRing, onSelectRing }: Props) {
               RING {hoverRing}
             </span>
             <span className="font-mono text-xs font-bold text-accent tabular-nums">
-              {result.rings[hoverRing - 1]?.widthPx}PX <span className="text-muted-foreground/50 ml-1">({result.rings[hoverRing - 1]?.widthMm}MM)</span>
+              {result.rings[hoverRing - 1]?.width_px.toFixed(1)}PX
             </span>
           </div>
         )}
@@ -229,10 +229,10 @@ export function RingOverlay({ result, selectedRing, onSelectRing }: Props) {
               <div className="w-1.5 h-1.5 bg-accent animate-pulse" />
             </span>
             <span className="font-mono text-sm font-bold text-accent tabular-nums">
-              {result.rings[selectedRing - 1]?.widthPx} PX <span className="text-muted-foreground font-normal">/ {result.rings[selectedRing - 1]?.widthMm} MM</span>
+              {result.rings[selectedRing - 1]?.width_px.toFixed(1)} PX
             </span>
             <span className="font-mono text-[9px] text-muted-foreground/60 mt-1 uppercase tracking-widest">
-              IN: {result.rings[selectedRing - 1]?.innerRadius}px / OUT: {result.rings[selectedRing - 1]?.outerRadius}px
+              IN: {result.rings[selectedRing - 1]?.inner_radius_px.toFixed(1)}px / OUT: {result.rings[selectedRing - 1]?.outer_radius_px.toFixed(1)}px
             </span>
           </div>
         )}

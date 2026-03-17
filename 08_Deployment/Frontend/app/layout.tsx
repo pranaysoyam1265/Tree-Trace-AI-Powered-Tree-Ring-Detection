@@ -69,7 +69,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`dark ${geistPixelLine.variable}`}>
+    <html lang="en" className={`dark ${geistPixelLine.variable}`} suppressHydrationWarning>
       <body
         className={`${geistMono.variable} ${silkscreen.variable} ${jetbrainsMono.variable} font-mono antialiased`}
         style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'Space Mono', 'Courier New', monospace" }}

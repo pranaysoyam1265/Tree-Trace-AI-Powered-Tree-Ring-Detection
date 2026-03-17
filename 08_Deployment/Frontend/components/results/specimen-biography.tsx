@@ -1,6 +1,6 @@
 "use client"
 
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 
 interface Props {
   result: AnalysisResult

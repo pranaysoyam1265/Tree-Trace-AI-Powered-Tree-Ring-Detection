@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { BarChart3, FileX } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
-import { getRingStats } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -13,9 +12,9 @@ interface Props {
 }
 
 export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
-  const stats = useMemo(() => getRingStats(result.rings), [result.rings])
+  const stats = result.statistics
   const maxWidth = useMemo(
-    () => result.rings.length > 0 ? Math.max(...result.rings.map((r) => r.widthPx)) : 100,
+    () => result.rings.length > 0 ? Math.max(...result.rings.map((r) => r.width_px)) : 100,
     [result.rings]
   )
   const [hoverRing, setHoverRing] = useState<number | null>(null)
@@ -71,22 +70,22 @@ export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
             {/* Bars container */}
             <div className="absolute inset-0 left-px bottom-px flex items-end gap-[1px] md:gap-[2px] px-1 pb-px pt-1">
               {result.rings.map((ring) => {
-                const heightPercent = (ring.widthPx / maxValue) * 100
-                const isSelected = selectedRing === ring.id
-                const isHovered = hoverRing === ring.id
+                const heightPercent = (ring.width_px / maxValue) * 100
+                const isSelected = selectedRing === ring.ring_number
+                const isHovered = hoverRing === ring.ring_number
 
                 // Anomaly coloring
-                const rwi = stats.avg > 0 ? ring.widthPx / stats.avg : 1
+                const rwi = stats.mean > 0 ? ring.width_px / stats.mean : 1
                 const isStress = rwi < 0.7
                 const isFavorable = rwi > 1.4
 
                 return (
                   <div
-                    key={ring.id}
+                    key={ring.ring_number}
                     className="relative flex-1 h-full flex flex-col justify-end group cursor-pointer"
-                    onMouseEnter={() => setHoverRing(ring.id)}
+                    onMouseEnter={() => setHoverRing(ring.ring_number)}
                     onMouseLeave={() => setHoverRing(null)}
-                    onClick={() => onSelectRing(isSelected ? null : ring.id)}
+                    onClick={() => onSelectRing(isSelected ? null : ring.ring_number)}
                   >
                     <div
                       className={cn(
@@ -109,10 +108,10 @@ export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
                       <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
                         <div className="border border-accent bg-background p-2 flex flex-col gap-1 shadow-[0_4px_12px_rgba(234,88,12,0.15)] backdrop-blur-sm whitespace-nowrap min-w-[70px] items-center">
                           <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground border-b border-border/50 pb-1 w-full text-center">
-                            R_{ring.id}
+                            R_{ring.ring_number}
                           </span>
                           <span className="font-mono text-xs font-bold text-accent">
-                            {ring.widthPx}px
+                            {ring.width_px.toFixed(1)}px
                           </span>
                         </div>
                         <div className="absolute top-full left-1/2 -translate-x-1/2 w-1.5 h-1.5 border-r border-b border-accent bg-background origin-top-left -rotate-45" />
@@ -127,20 +126,20 @@ export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
             <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" style={{ left: '1px', bottom: '1px', width: 'calc(100% - 1px)', height: 'calc(100% - 1px)' }}>
               {/* Mean reference line (dashed) */}
               <line
-                x1="0" y1={`${100 - (stats.avg / maxValue) * 100}%`}
-                x2="100%" y2={`${100 - (stats.avg / maxValue) * 100}%`}
+                x1="0" y1={`${100 - (stats.mean / maxValue) * 100}%`}
+                x2="100%" y2={`${100 - (stats.mean / maxValue) * 100}%`}
                 stroke="#a3a3a3" strokeWidth="1" strokeDasharray="8 4"
               />
 
               {/* Moving average line (white solid) */}
-              {result.statistics?.movingAverages && result.statistics.movingAverages.length > 0 && (
+              {stats.moving_averages && stats.moving_averages.length > 0 && (
                 <polyline
                   fill="none"
                   stroke="#ffffff"
                   strokeWidth="1.5"
                   strokeLinejoin="round"
-                  points={result.statistics.movingAverages.map((ma) => {
-                    const x = ((ma.ringId - 1) / (result.rings.length - 1)) * 100
+                  points={stats.moving_averages.map((ma) => {
+                    const x = ((ma.ring - 1) / (result.rings.length - 1)) * 100
                     const y = 100 - (ma.value / maxValue) * 100
                     return `${x}%,${y}%`
                   }).join(' ')}
@@ -151,9 +150,9 @@ export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
             {/* Mean label */}
             <div
               className="absolute right-1 font-mono text-[8px] text-muted-foreground pointer-events-none z-10 bg-background px-1"
-              style={{ top: `${100 - (stats.avg / maxValue) * 100}%`, transform: 'translateY(-50%)' }}
+              style={{ top: `${100 - (stats.mean / maxValue) * 100}%`, transform: 'translateY(-50%)' }}
             >
-              MEAN: {stats.avg}
+              MEAN: {stats.mean.toFixed(1)}
             </div>
           </div>
         )}
@@ -168,10 +167,10 @@ export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 border-t border-border divide-x divide-border">
         {[
-          { label: "AVG WIDTH", value: `${stats.avgMm}mm` },
-          { label: "MIN WIDTH", value: `${stats.minMm}mm`, sub: `R_${stats.minRing}` },
-          { label: "MAX WIDTH", value: `${stats.maxMm}mm`, sub: `R_${stats.maxRing}` },
-          { label: "STD DEV", value: `${stats.stdDev}px` },
+          { label: "AVG WIDTH", value: `${stats.mean.toFixed(1)}px` },
+          { label: "MIN WIDTH", value: `${stats.min.toFixed(1)}px` },
+          { label: "MAX WIDTH", value: `${stats.max.toFixed(1)}px` },
+          { label: "STD DEV", value: `${stats.std.toFixed(1)}px` },
         ].map((s) => (
           <div key={s.label} className="flex flex-col p-3 bg-surface/50 justify-center">
             <span className="font-mono text-[9px] uppercase tracking-[1px] text-muted-foreground">
@@ -181,9 +180,6 @@ export function WidthChart({ result, selectedRing, onSelectRing }: Props) {
               <span className="font-mono text-sm font-bold text-foreground">
                 {s.value}
               </span>
-              {s.sub && (
-                <span className="font-mono text-[9px] text-accent">[{s.sub}]</span>
-              )}
             </div>
           </div>
         ))}

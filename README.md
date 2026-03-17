@@ -1,65 +1,95 @@
-# TreeTrace
+# TreeTrace | AI-Powered Tree Ring Detection
 
-AI-powered tree ring detection and dendrochronology analysis system.
+TreeTrace is an advanced desktop-class web application for dendrochronology research. It uses AI-powered computer vision (CS-TRD) to automatically identify tree ring boundaries, count rings, and measure ring widths from high-resolution wood cross-section images.
+
+## Features
+
+- **Automated Ring Detection**: Leverages the CS-TRD (Concentric Shape - Tree Ring Detection) algorithm to accurately map tree rings.
+- **Interactive Visualization**: Features a high-performance custom canvas viewer to inspect and interact with detected ring boundaries over the original image.
+- **Comprehensive Analytics**: Automatically calculates:
+  - Estimated tree age
+  - Average growth rates and trends
+  - Health scores based on growth consistency, stress resistance, and recovery
+  - Biomass and carbon sequestration equivalents
+- **Data Export**: Export ring measurements (inner radius, outer radius, width, estimated year) to CSV or JSON formats for further statistical analysis.
+- **Analysis History**: Keeps a persistent record of all past analyses, searchable and filterable.
+
+## Architecture
+
+TreeTrace is built with a modern, decoupled architecture:
+
+### 1. Frontend (Next.js)
+- **Location**: `08_Deployment/Frontend/`
+- **Tech Stack**: Next.js 14, React, Tailwind CSS, Framer Motion
+- **Design**: "Industrial Brutalist" UI, heavily utilizing monospace fonts, precise grid layouts, and high-contrast status indicators.
+- **Key Capabilities**: 
+  - Real-time processing simulations
+  - Canvas-based polygon rendering for ring maps
+  - Complex charting (Width Distributions, Cumulative Growth) using custom SVG components.
+
+### 2. Backend (FastAPI)
+- **Location**: `08_Deployment/Backend/`
+- **Tech Stack**: Python 3.11, FastAPI, Uvicorn, Pydantic, OpenCV, Pillow
+- **Role**: Serves as the bridge between the React frontend and the raw Python analysis pipelines.
+- **Capabilities**:
+  - Exposes REST endpoints (`/api/analyze`, `/api/results`, `/api/samples`)
+  - Executes the underlying CS-TRD pipeline subprocesses
+  - Transforms raw numpy/JSON outputs into strictly typed analytical summaries for the UI.
+
+### 3. Core Algorithm (CS-TRD)
+- **Location**: `09_Scripts/cstrd_wrapper.py` & `c:/Users/prana/OneDrive/Desktop/cstrd_ipol/`
+- **Role**: The foundational computer vision model that processes images to extract ring boundary polygons and pith coordinates.
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- Python 3.11+
+- The `cstrd_ipol` core algorithm must be available at the configured path.
+
+### Running the Backend
+
+1. Navigate to the backend directory:
+   ```bash
+   cd 08_Deployment/Backend
+   ```
+2. Install requirements (if not already installed globally):
+   ```bash
+   pip install fastapi uvicorn pydantic opencv-python-headless pillow numpy
+   ```
+3. Start the FastAPI server (runs on `http://localhost:8000` by default):
+   ```bash
+   python main.py
+   ```
+
+### Running the Frontend
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd 08_Deployment/Frontend
+   ```
+2. Install NPM dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Next.js development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Project Structure
 
-```
+```text
 TreeTrace/
-├── 01_Raw_Data/          — URuDendro dataset (images, pith CSV)
-├── 02_Preprocessed/      — Preprocessed image data
-├── 03_Features/          — Extracted features
-├── 04_Labels/            — Annotation labels
-├── 05_Models/            — Trained model weights
-├── 06_ML_Core/           — Core ML pipeline code
-├── 07_Outputs/           — Detection and evaluation outputs
+├── 01_Raw_Data/           # Source images (URuDendro, CS-TRD samples)
 ├── 08_Deployment/
-│   ├── Frontend/         — Next.js web application
-│   └── Backend/          — FastAPI Python server
-├── 09_Scripts/           — Utility and processing scripts
-├── 10_Notebooks/         — Jupyter notebooks
-├── 11_Docs/              — Documentation
-└── 12_Logs/              — Log files
+│   ├── Backend/           # FastAPI application (main.py, routers, schema)
+│   ├── Frontend/          # Next.js web application (app, components, lib)
+│   └── Streamlit_App/     # Legacy Python-only dashboard
+├── 09_Scripts/            # Core wrapper scripts, evaluation scripts
+└── README.md              # This file
 ```
 
-## External Dependencies
-
-```
-C:\Users\prana\OneDrive\Desktop\cstrd_ipol\     — CS-TRD ring detector
-C:\Users\prana\OneDrive\Desktop\uruDendro-main\ — Evaluation toolkit
-```
-
-## Running the Application
-
-### Frontend (Next.js)
-```powershell
-cd 08_Deployment\Frontend
-npm install
-npm run dev
-# Runs at http://localhost:3000
-```
-
-### Backend (FastAPI)
-```powershell
-cd 08_Deployment\Backend
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-# Runs at http://localhost:8000
-```
-
-### Detection Script (CLI)
-```powershell
-python 09_Scripts/cstrd_wrapper.py --image F02a
-```
-
-## Benchmark Results
-
-| Image | Precision | Recall | F1 Score |
-|-------|-----------|--------|----------|
-| F02a  | 88%       | 65%    | 0.75     |
-| F02b  | 95%       | 86%    | 0.90     |
-| F02c  | 94%       | 77%    | 0.85     |
-| F03a  | 91%       | 83%    | 0.87     |
-| F07a  | 87%       | 54%    | 0.67     |
-
-**Average:** Precision 91% | Recall 73% | F1 0.81
+## Contributing
+When contributing to TreeTrace, please ensure that any frontend type changes are strictly mirrored in the backend's Pydantic schemas, and run `npm run build` to verify type safety before committing.

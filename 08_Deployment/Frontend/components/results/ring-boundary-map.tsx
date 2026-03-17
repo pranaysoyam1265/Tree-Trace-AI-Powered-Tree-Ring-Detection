@@ -2,9 +2,8 @@
 
 /* ═══════════════════════════════════════════════════════════════════
    RING BOUNDARY MAP  — Canvas-based ring polygon visualization
-   Shows detected ring boundaries as colored polygon outlines on
-   pure black background.  Fully interactive (hover, select, zoom,
-   pan, labels, export).
+   Shows detected ring boundaries as colored polygon outlines.
+   Now uses REAL polygon data from the API (result.rings[].points).
    ═══════════════════════════════════════════════════════════════════ */
 
 import {
@@ -15,8 +14,7 @@ import {
   useMemo,
 } from "react"
 import { Download } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
-import { generateMockPolygons, type RingPolygonData } from "@/lib/ring-map/mock-polygons"
+import type { AnalysisResult } from "@/lib/types"
 import { getRingColor, getSpectrumGradient } from "@/lib/ring-map/colors"
 import {
   computeFitTransform,
@@ -50,17 +48,18 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useRef<{ x: number; y: number; px: number; py: number } | null>(null)
 
-  /* ── Mock polygon data (deterministic from ID) ── */
-  const polyData: RingPolygonData = useMemo(
+  /* ── Real polygon data from API ── */
+  const imageWidth = result.image_dimensions.width || 2364
+  const imageHeight = result.image_dimensions.height || 2364
+  const pithPoint: Point = { x: result.pith.cx, y: result.pith.cy }
+
+  // Convert API ring polygon points [[x,y],...] to Point[]
+  const ringPolygons: Point[][] = useMemo(
     () =>
-      generateMockPolygons(
-        result.id,
-        result.ringCount,
-        2364,
-        2364,
-        result.pith
+      result.rings.map((ring) =>
+        (ring.points || []).map((pt: number[]) => ({ x: pt[0], y: pt[1] }))
       ),
-    [result.id, result.ringCount, result.pith]
+    [result.rings]
   )
 
   /* ── Responsive resize observer ── */
@@ -80,8 +79,8 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
 
   /* ── Compute base transform ── */
   const baseTransform = useMemo(
-    () => computeFitTransform(polyData.imageWidth, polyData.imageHeight, canvasW, canvasH, 24),
-    [polyData.imageWidth, polyData.imageHeight, canvasW, canvasH]
+    () => computeFitTransform(imageWidth, imageHeight, canvasW, canvasH, 24),
+    [imageWidth, imageHeight, canvasW, canvasH]
   )
 
   const fullTransform: ScaleTransform = useMemo(
@@ -92,15 +91,10 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
   /* ── Pre-compute transformed polygon points ── */
   const transformedRings = useMemo(
     () =>
-      polyData.rings.map((ring) =>
-        transformPolygon(
-          ring.points,
-          fullTransform,
-          canvasW,
-          canvasH
-        )
+      ringPolygons.map((pts) =>
+        transformPolygon(pts, fullTransform, canvasW, canvasH)
       ),
-    [polyData.rings, fullTransform, canvasW, canvasH]
+    [ringPolygons, fullTransform, canvasW, canvasH]
   )
 
   /* ── Canvas drawing ── */
@@ -120,12 +114,13 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
     ctx.fillStyle = "#000000"
     ctx.fillRect(0, 0, canvasW, canvasH)
 
-    const totalRings = polyData.rings.length
+    const totalRings = transformedRings.length
     if (totalRings === 0) return
 
-    // Draw rings front-to-back (innermost first)
+    // Draw rings
     for (let i = 0; i < totalRings; i++) {
       const pts = transformedRings[i]
+      if (!pts || pts.length < 3) continue
       const ringId = i + 1
       const isSelected = selectedRing === ringId
       const isHovered = hoveredRing === ringId
@@ -141,7 +136,6 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
       if (isSelected || isHovered) {
         ctx.strokeStyle = "#ffffff"
         ctx.lineWidth = isSelected ? 2.5 : 2
-        // Glow
         ctx.shadowColor = getRingColor(i, totalRings, 0.7)
         ctx.shadowBlur = 8
       } else {
@@ -158,8 +152,8 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
 
     // Draw pith marker
     const pithCanvas = {
-      x: canvasW / 2 + (baseTransform.offsetX + polyData.pith.x * baseTransform.scale - canvasW / 2) * zoom + panX,
-      y: canvasH / 2 + (baseTransform.offsetY + polyData.pith.y * baseTransform.scale - canvasH / 2) * zoom + panY,
+      x: canvasW / 2 + (baseTransform.offsetX + pithPoint.x * baseTransform.scale - canvasW / 2) * zoom + panX,
+      y: canvasH / 2 + (baseTransform.offsetY + pithPoint.y * baseTransform.scale - canvasH / 2) * zoom + panY,
     }
     ctx.beginPath()
     ctx.arc(pithCanvas.x, pithCanvas.y, 4, 0, Math.PI * 2)
@@ -176,10 +170,9 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
       ctx.font = "10px 'JetBrains Mono', monospace"
       ctx.textAlign = "center"
       for (let i = 0; i < totalRings; i++) {
-        // Show every other label to avoid crowding, or every label if <15 rings
         if (totalRings > 15 && i % 2 !== 0) continue
         const pts = transformedRings[i]
-        // Find topmost point
+        if (!pts || pts.length < 3) continue
         let topIdx = 0
         for (let j = 1; j < pts.length; j++) {
           if (pts[j].y < pts[topIdx].y) topIdx = j
@@ -187,7 +180,6 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
         const lx = pts[topIdx].x
         const ly = pts[topIdx].y - 6
 
-        // Background rect
         const text = String(i + 1)
         const tm = ctx.measureText(text)
         const pw = tm.width + 6
@@ -200,9 +192,9 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
       }
     }
   }, [
-    canvasW, canvasH, polyData, transformedRings,
+    canvasW, canvasH, transformedRings,
     selectedRing, hoveredRing, showLabels,
-    zoom, panX, panY, baseTransform,
+    zoom, panX, panY, baseTransform, pithPoint,
   ])
 
   /* ── Mouse interaction ── */
@@ -218,7 +210,6 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      // Panning
       if (isPanning && panStart.current) {
         const dx = e.clientX - panStart.current.x
         const dy = e.clientY - panStart.current.y
@@ -228,10 +219,10 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
       }
 
       const mouse = getMousePos(e)
-      // Hit test rings (outermost first)
       let found: number | null = null
       let minDist = Infinity
       for (let i = transformedRings.length - 1; i >= 0; i--) {
+        if (!transformedRings[i] || transformedRings[i].length < 3) continue
         const d = distanceToPolygon(mouse, transformedRings[i])
         if (d < 6 && d < minDist) {
           minDist = d
@@ -268,6 +259,7 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
       let found: number | null = null
       let minDist = Infinity
       for (let i = transformedRings.length - 1; i >= 0; i--) {
+        if (!transformedRings[i] || transformedRings[i].length < 3) continue
         const d = distanceToPolygon(mouse, transformedRings[i])
         if (d < 6 && d < minDist) {
           minDist = d
@@ -306,7 +298,7 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
   const fitView = () => { setZoom(1); setPanX(0); setPanY(0) }
 
   const ringWidthForHovered = hoveredRing && result.rings[hoveredRing - 1]
-    ? result.rings[hoveredRing - 1].widthPx
+    ? result.rings[hoveredRing - 1].width_px
     : null
 
   return (
@@ -323,7 +315,7 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
           [RING BOUNDARY MAP]
         </span>
         <span className="font-mono text-[10px] tracking-[0.15em] uppercase text-muted-foreground">
-          {result.ringCount} RINGS
+          {result.ring_count} RINGS
         </span>
       </div>
 
@@ -404,7 +396,7 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
             </span>
             {ringWidthForHovered !== null && (
               <span className="font-mono text-xs text-white ml-2">
-                — WIDTH: {ringWidthForHovered}PX
+                — WIDTH: {ringWidthForHovered.toFixed(1)}PX
               </span>
             )}
           </div>

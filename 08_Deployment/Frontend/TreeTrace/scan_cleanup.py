@@ -148,7 +148,7 @@ def main():
     print("FILES MARKED FOR DELETION")
     print("="*60)
     for rel_path, size, mod, reason in sorted(files_to_delete):
-        print(f"[DELETE] {rel_path} ({format_size(size)}, {mod}) -> {reason}")
+        print(f"[DELETE] {rel_path} ({format_size(size)}, {mod}) -> {reason}".encode('utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8', errors='replace'))
     
     print("\n" + "="*60)
     print("SUMMARY OF SCAN")

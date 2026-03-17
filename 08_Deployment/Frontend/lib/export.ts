@@ -3,12 +3,12 @@
    CSV, JSON, and PNG export for ring analysis results.
    ═══════════════════════════════════════════════════════════════════ */
 
-import type { AnalysisResult, RingData } from "./mock-results"
+import type { AnalysisResult } from "./types"
 
 export function exportCSV(result: AnalysisResult): void {
-  const header = "Ring #,Inner Radius (px),Outer Radius (px),Width (px),Width (mm)\n"
+  const header = "Ring #,Inner Radius (px),Outer Radius (px),Width (px),Est. Year\n"
   const rows = result.rings
-    .map((r) => `${r.id},${r.innerRadius},${r.outerRadius},${r.widthPx},${r.widthMm}`)
+    .map((r) => `${r.ring_number},${r.inner_radius_px.toFixed(1)},${r.outer_radius_px.toFixed(1)},${r.width_px.toFixed(1)},${r.estimated_year}`)
     .join("\n")
   const csv = header + rows
   downloadBlob(csv, `treetrace-${result.id}.csv`, "text/csv")

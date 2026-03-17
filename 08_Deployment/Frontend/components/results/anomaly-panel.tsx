@@ -1,25 +1,22 @@
 "use client"
 
-import type { AnalysisResult, GrowthAnomaly } from "@/lib/mock-results"
+import type { AnalysisResult, AnomalyItem } from "@/lib/types"
 
 interface Props {
   result: AnalysisResult
 }
 
-function AnomalyEntry({ anomaly }: { anomaly: GrowthAnomaly }) {
-  const isStress = anomaly.type === 'stress'
+function AnomalyEntry({ anomaly }: { anomaly: AnomalyItem }) {
+  const isStress = anomaly.type.includes('stress')
   const arrowColor = isStress ? '#ef4444' : '#22c55e'
   const arrow = isStress ? '▼' : '▲'
 
   const severityColor = (() => {
-    switch (anomaly.severity) {
-      case 'severe': return '#ef4444'
-      case 'moderate': return '#eab308'
-      case 'mild': return '#a3a3a3'
-      case 'exceptional': return '#22c55e'
-      case 'above_average': return '#4ade80'
-      default: return '#a3a3a3'
-    }
+    if (anomaly.type === 'severe_stress') return '#ef4444'
+    if (anomaly.type === 'moderate_stress') return '#eab308'
+    if (anomaly.type === 'exceptional_growth') return '#22c55e'
+    if (anomaly.type === 'favorable') return '#4ade80'
+    return '#a3a3a3'
   })()
 
   return (
@@ -27,14 +24,14 @@ function AnomalyEntry({ anomaly }: { anomaly: GrowthAnomaly }) {
       <div className="flex items-center gap-3 font-mono text-sm">
         <span style={{ color: arrowColor }} className="font-bold">{arrow}</span>
         <span className="font-bold text-white tabular-nums w-12">{anomaly.year}</span>
-        <span className="tabular-nums text-muted-foreground w-10">{anomaly.rwi}</span>
+        <span className="tabular-nums text-muted-foreground w-10">{anomaly.deviation.toFixed(2)}</span>
         <span className="text-[10px] font-bold uppercase tracking-[1px]" style={{ color: severityColor }}>
-          {anomaly.severity.replace('_', ' ')}
+          {anomaly.label}
         </span>
       </div>
-      {anomaly.description && (
+      {anomaly.interpretation && (
         <span className="font-mono text-[10px] text-muted-foreground ml-7 pl-1">
-          &ldquo;{anomaly.description}&rdquo;
+          &ldquo;{anomaly.interpretation}&rdquo;
         </span>
       )}
     </div>
@@ -42,8 +39,8 @@ function AnomalyEntry({ anomaly }: { anomaly: GrowthAnomaly }) {
 }
 
 export function AnomalyPanel({ result }: Props) {
-  const stressEvents = result.anomalies.filter(a => a.type === 'stress')
-  const favorableEvents = result.anomalies.filter(a => a.type === 'favorable')
+  const stressEvents = result.anomalies.filter(a => a.type.includes('stress'))
+  const favorableEvents = result.anomalies.filter(a => !a.type.includes('stress'))
   const totalAnoms = result.anomalies.length
 
   return (
@@ -98,7 +95,7 @@ export function AnomalyPanel({ result }: Props) {
       {/* Summary Footer */}
       <div className="border-t border-border bg-surface px-4 py-2 flex flex-col gap-0.5">
         <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted-foreground">
-          {totalAnoms} ANOMALIES IN {result.ringCount} YEARS
+          {totalAnoms} ANOMALIES IN {result.ring_count} YEARS
         </span>
         <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted-foreground">
           {stressEvents.length} STRESS │ {favorableEvents.length} FAVORABLE

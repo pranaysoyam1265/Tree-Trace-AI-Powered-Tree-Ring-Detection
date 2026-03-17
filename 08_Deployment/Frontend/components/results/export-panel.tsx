@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { FileSpreadsheet, FileJson, Image, FileText, Loader2, Check, Download } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { exportCSV, exportJSON } from "@/lib/export"
 import { cn } from "@/lib/utils"
 

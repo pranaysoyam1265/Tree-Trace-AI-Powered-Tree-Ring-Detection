@@ -1,6 +1,6 @@
 "use client"
 
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 
 interface Props {
   result: AnalysisResult
@@ -52,9 +52,10 @@ export function HealthScoreCard({ result }: Props) {
       {/* Sub-factors */}
       <div className="px-4 py-4 flex flex-col gap-3">
         {[
-          { label: "CONSISTENCY", value: health.consistency },
-          { label: "TREND", value: health.trend },
-          { label: "RESILIENCE", value: health.resilience },
+          { label: "GROWTH RATE", value: health.components.growth_rate },
+          { label: "CONSISTENCY", value: health.components.consistency },
+          { label: "STRESS RESIST.", value: health.components.stress_resistance },
+          { label: "RECOVERY", value: health.components.recovery_ability },
         ].map(({ label, value }) => (
           <div key={label} className="flex flex-col gap-1">
             <div className="flex justify-between items-center">
@@ -76,7 +77,7 @@ export function HealthScoreCard({ result }: Props) {
       {/* Interpretation */}
       <div className="px-4 py-4">
         <p className="font-mono text-sm text-muted-foreground leading-relaxed">
-          &ldquo;{health.interpretation}&rdquo;
+          &ldquo;{health.detail}&rdquo;
         </p>
       </div>
     </div>

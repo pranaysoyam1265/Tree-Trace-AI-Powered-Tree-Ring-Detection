@@ -31,6 +31,7 @@ build/
 venv/
 env/
 .venv/
+.venv_old/
 .env/
 ENV/
 .conda/
@@ -48,21 +49,17 @@ ENV/
 !.env.template
 
 # ================================
-# LARGE DATA / ML FILES
+# LARGE DATA / ML / ENV FILES
 # ================================
-# Raw data images (large)
-01_Raw_Data/URuDendro/images/
-
-# Model weights (large binary files)
-05_Models/*.pth
-05_Models/*.h5
-05_Models/*.pkl
-05_Models/*.bin
-
-# Output files (generated, not source)
-07_Outputs/cstrd_results/*/
-07_Outputs/evaluation_results/*/
-07_Outputs/streamlit_results/*/
+# Datasets and generated files (too large for GitHub)
+01_Raw_Data/
+02_Preprocessed/
+04_Labels/
+05_Models/
+06_ML_Core/
+07_Outputs/
+10_Notebooks/
+12_Logs/
 
 # ================================
 # OS FILES

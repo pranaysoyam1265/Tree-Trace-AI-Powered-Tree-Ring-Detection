@@ -1,10 +1,13 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import { MOCK_HISTORY, AnalysisRecord } from "@/lib/mock-history"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import { AnalysisRecord } from "@/lib/mock-history"
 import { filterHistoryData, HistoryFilters } from "@/lib/history-filters"
 import { sortHistoryIndex, SortField, SortDirection } from "@/lib/history-sort"
 import { useHistoryUrlState } from "@/lib/url-state"
+import { apiClient } from "@/lib/api-client"
+import { getHistoryIndex, deleteFromCache } from "@/lib/result-storage"
+import type { AnalysisResultSummary } from "@/lib/types"
 
 import { Navigation } from "@/components/ascii-hub/navigation"
 import { HistoryHeader } from "@/components/history/history-header"
@@ -48,13 +51,74 @@ function HistoryContent() {
     return { ...DEFAULT_FILTERS, searchQuery: q, statusFilter: status as any }
   })
 
+  const [allRecords, setAllRecords] = useState<AnalysisRecord[]>([])
+  const [loading, setLoading] = useState(true)
+
   // Selection & Interactivity State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [previewId, setPreviewId] = useState<string | null>(null)
   const [comparisonOpen, setComparisonOpen] = useState(false)
 
+  // Convert API summary to the AnalysisRecord shape expected by history sub-components
+  const summaryToRecord = useCallback((s: AnalysisResultSummary): AnalysisRecord => ({
+    id: s.id,
+    imageId: s.id,
+    imageName: s.image_name,
+    alias: null,
+    notes: null,
+    tags: [],
+    type: 'single',
+    batchId: null,
+    batchName: null,
+    status: 'completed',
+    error: null,
+    ringCount: s.ring_count,
+    estimatedAge: s.estimated_age,
+    averageRingWidth: null,
+    ringWidths: [],
+    precision: null,
+    recall: null,
+    f1Score: s.f1_score,
+    rmse: null,
+    confidence: s.health_label === 'Excellent' || s.health_label === 'Good' ? 'high' : s.health_label === 'Fair' ? 'medium' : 'low',
+    processingTime: s.processing_time_seconds,
+    analyzedAt: s.analyzed_at,
+    thumbnailUrl: '',
+    overlayUrl: null,
+    pith: null,
+    imageDimensions: { width: 0, height: 0 },
+  }), [])
+
+  // Fetch history from API, merge with localStorage
+  useEffect(() => {
+    async function loadHistory() {
+      setLoading(true)
+      try {
+        // Try API first
+        const apiData = await apiClient.getAllResults()
+        const apiRecords = apiData.results.map(summaryToRecord)
+
+        // Merge with localStorage (may have results not yet on backend)
+        const localIndex = getHistoryIndex()
+        const apiIds = new Set(apiRecords.map(r => r.id))
+        const localOnly = localIndex
+          .filter(s => !apiIds.has(s.id))
+          .map(summaryToRecord)
+
+        setAllRecords([...localOnly, ...apiRecords])
+      } catch {
+        // API offline — use localStorage only
+        const localIndex = getHistoryIndex()
+        setAllRecords(localIndex.map(summaryToRecord))
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadHistory()
+  }, [summaryToRecord])
+
   // Derived Data
-  const filteredData = useMemo(() => filterHistoryData(MOCK_HISTORY, filters), [filters])
+  const filteredData = useMemo(() => filterHistoryData(allRecords, filters), [allRecords, filters])
   const sortedData = useMemo(() => sortHistoryIndex(filteredData, sortBy, sortDir), [filteredData, sortBy, sortDir])
   const isAllSelected = sortedData.length > 0 && selectedIds.size === sortedData.length
 
@@ -107,8 +171,8 @@ function HistoryContent() {
   ])
 
   // Get active preview record
-  const previewRecord = previewId ? MOCK_HISTORY.find(r => r.id === previewId) || null : null
-  const comparisonRecords = MOCK_HISTORY.filter(r => selectedIds.has(r.id))
+  const previewRecord = previewId ? allRecords.find(r => r.id === previewId) || null : null
+  const comparisonRecords = allRecords.filter(r => selectedIds.has(r.id))
 
   return (
     <div className="min-h-screen bg-background dot-grid-bg text-foreground flex flex-col">
@@ -119,14 +183,14 @@ function HistoryContent() {
         {/* Top Header */}
         <HistoryHeader
           filteredCount={sortedData.length}
-          totalCount={MOCK_HISTORY.length}
+          totalCount={allRecords.length}
           lastUpdated="JUST NOW"
         />
 
         {/* Global Stats */}
         <StatsSummary
           records={filteredData}
-          totalRecords={MOCK_HISTORY.length}
+          totalRecords={allRecords.length}
         />
 
         {/* Search & Filters */}

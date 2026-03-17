@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from "react"
 import { ChevronUp, ChevronDown, FileX, Terminal } from "lucide-react"
-import type { AnalysisResult } from "@/lib/mock-results"
+import type { AnalysisResult } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -11,11 +11,11 @@ interface Props {
   onSelectRing: (ringId: number | null) => void
 }
 
-type SortKey = "id" | "innerRadius" | "outerRadius" | "widthPx" | "widthMm"
+type SortKey = "ring_number" | "inner_radius_px" | "outer_radius_px" | "width_px"
 type SortDir = "asc" | "desc"
 
 export function RingTable({ result, selectedRing, onSelectRing }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>("id")
+  const [sortKey, setSortKey] = useState<SortKey>("ring_number")
   const [sortDir, setSortDir] = useState<SortDir>("asc")
   const rowRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
@@ -46,11 +46,10 @@ export function RingTable({ result, selectedRing, onSelectRing }: Props) {
   }, [selectedRing])
 
   const columns: { key: SortKey; label: string }[] = [
-    { key: "id", label: "ID" },
-    { key: "innerRadius", label: "INNER(px)" },
-    { key: "outerRadius", label: "OUTER(px)" },
-    { key: "widthPx", label: "WIDTH(px)" },
-    { key: "widthMm", label: "WIDTH(mm)" },
+    { key: "ring_number", label: "ID" },
+    { key: "inner_radius_px", label: "INNER(px)" },
+    { key: "outer_radius_px", label: "OUTER(px)" },
+    { key: "width_px", label: "WIDTH(px)" },
   ]
 
   const SortIcon = sortDir === "asc" ? ChevronUp : ChevronDown
@@ -94,6 +93,10 @@ export function RingTable({ result, selectedRing, onSelectRing }: Props) {
             </div>
           </button>
         ))}
+        {/* Width mm column header */}
+        <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted-foreground text-right">
+          YEAR
+        </span>
       </div>
 
       {/* Table Body */}
@@ -108,12 +111,12 @@ export function RingTable({ result, selectedRing, onSelectRing }: Props) {
         ) : (
           <div className="flex flex-col w-full">
             {sorted.map((ring) => {
-              const isSelected = selectedRing === ring.id
+              const isSelected = selectedRing === ring.ring_number
               return (
                 <div
-                  key={ring.id}
-                  ref={(el) => { if (el) rowRefs.current.set(ring.id, el) }}
-                  onClick={() => onSelectRing(isSelected ? null : ring.id)}
+                  key={ring.ring_number}
+                  ref={(el) => { if (el) rowRefs.current.set(ring.ring_number, el) }}
+                  onClick={() => onSelectRing(isSelected ? null : ring.ring_number)}
                   className={cn(
                     "grid grid-cols-5 gap-2 px-4 py-2 border-b cursor-pointer transition-colors relative",
                     isSelected
@@ -124,19 +127,19 @@ export function RingTable({ result, selectedRing, onSelectRing }: Props) {
                   {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent" />}
 
                   <span className={cn("font-mono text-xs tabular-nums text-left", isSelected && "text-accent")}>
-                    R_{ring.id.toString().padStart(3, '0')}
+                    R_{ring.ring_number.toString().padStart(3, '0')}
                   </span>
                   <span className="font-mono text-xs text-right tabular-nums">
-                    {ring.innerRadius}
+                    {ring.inner_radius_px.toFixed(1)}
                   </span>
                   <span className="font-mono text-xs text-right tabular-nums">
-                    {ring.outerRadius}
+                    {ring.outer_radius_px.toFixed(1)}
                   </span>
                   <span className={cn("font-mono text-xs text-right tabular-nums", isSelected && "text-accent")}>
-                    {ring.widthPx}
+                    {ring.width_px.toFixed(1)}
                   </span>
                   <span className="font-mono text-[10px] text-right tabular-nums text-muted-foreground flex items-center justify-end">
-                    {ring.widthMm} <span className="text-[8px] ml-0.5 opacity-50">MM</span>
+                    {ring.estimated_year}
                   </span>
                 </div>
               )
