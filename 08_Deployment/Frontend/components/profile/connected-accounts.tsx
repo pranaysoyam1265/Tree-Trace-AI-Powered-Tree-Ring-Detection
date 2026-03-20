@@ -42,7 +42,7 @@ export function ConnectedAccounts() {
   }
 
   return (
-    <div className="rounded-none-none border border-border bg-background dot-grid-bg p-6 h-full">
+    <div className="rounded-none border border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] p-6 h-full">
       <span className="mb-6 block font-mono text-xs uppercase tracking-[2px] text-accent">
         {"// EXTERNAL_LINKS"}
       </span>

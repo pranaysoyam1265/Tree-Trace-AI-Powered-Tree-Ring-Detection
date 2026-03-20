@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/contexts/auth-context"
 import { SettingsProvider } from "@/lib/settings-store"
 import { ThemeProvider } from "@/components/theme/theme-provider"
+import { AnalysisProvider } from "@/lib/contexts/analysis-context"
 import "./globals.css"
 
 const geistMono = Geist_Mono({
@@ -76,9 +77,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SettingsProvider>
-            <ThemeProvider attribute="data-theme" defaultTheme="forest" enableSystem={false}>
-              {children}
-            </ThemeProvider>
+            <AnalysisProvider>
+              <ThemeProvider attribute="data-theme" defaultTheme="forest" enableSystem={false}>
+                {children}
+              </ThemeProvider>
+            </AnalysisProvider>
           </SettingsProvider>
         </AuthProvider>
         <Analytics />

@@ -37,7 +37,9 @@ def get_sample_images():
     if IMAGE_DIR.exists():
         for ext in ['*.png', '*.jpg', '*.PNG', '*.JPG']:
             images.extend(IMAGE_DIR.glob(ext))
-    return sorted([img.stem for img in images])
+    # Deduplicate stems since Windows glob is case-insensitive
+    unique_stems = list(set(img.stem for img in images))
+    return sorted(unique_stems)
 
 
 def get_image_path(image_name):

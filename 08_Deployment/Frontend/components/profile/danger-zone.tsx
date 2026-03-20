@@ -12,7 +12,7 @@ export function DangerZone() {
   const [confirmText, setConfirmText] = useState("")
 
   return (
-    <div className="rounded-lg border border-destructive bg-background dot-grid-bg p-6 relative overflow-hidden">
+    <div className="rounded-lg border border-destructive/50 bg-[var(--bg-surface)]/60 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] p-6 relative overflow-hidden">
       {/* Background hint */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/10 blur-3xl pointer-events-none" />
 

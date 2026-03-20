@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { useDendroLab } from "@/lib/contexts/dendrolab-context"
 import { Sparkles, GitCompare, Search, ChevronUp, ChevronDown, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAnalysis } from "@/lib/contexts/analysis-context"
 
 /* ═══════════════════════════════════════════════════════════════════
    PURPOSE HEADER — Landing section explaining DendroLab
@@ -32,6 +33,8 @@ export function PurposeHeader() {
   const { state } = useDendroLab()
   const step1Done = state.completedStages.has(1)
   const [collapsed, setCollapsed] = useState(step1Done)
+  const router = useRouter()
+  const { reset } = useAnalysis()
 
   // Mock prerequisite check — count available analyses
   const analysesAvailable = 4 // In real app, pull from history context
@@ -110,12 +113,15 @@ export function PurposeHeader() {
             ) : (
               <div className="flex items-center gap-3">
                 <span className="font-mono text-xs text-red-400">✗ No analyses found</span>
-                <Link
-                  href="/analyze"
+                <button
+                  onClick={() => {
+                    reset()
+                    router.push("/analyze")
+                  }}
                   className="font-mono text-[10px] uppercase text-[#ea580c] border border-[#ea580c] px-2 py-1 hover:bg-[#ea580c] hover:text-black tracking-[0.1em]"
                 >
                   [▸ GO TO ANALYZE PAGE]
-                </Link>
+                </button>
               </div>
             )}
           </div>

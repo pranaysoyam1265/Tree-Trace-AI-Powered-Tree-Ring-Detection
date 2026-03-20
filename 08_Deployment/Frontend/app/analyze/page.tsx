@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react"
 import { Navigation } from "@/components/ascii-hub/navigation"
-import { AnalysisProvider, useAnalysis } from "@/lib/contexts/analysis-context"
+import { useAnalysis } from "@/lib/contexts/analysis-context"
 import { StepIndicator } from "@/components/analysis/step-indicator"
 import { UploadStep } from "@/components/analysis/upload-step"
 import { PithStep } from "@/components/analysis/pith-step"
@@ -52,11 +52,8 @@ function AnalysisFlow() {
     </div>
   )
 }
-
 export default function AnalyzePage() {
   return (
-    <AnalysisProvider>
-      <AnalysisFlow />
-    </AnalysisProvider>
+    <AnalysisFlow />
   )
 }

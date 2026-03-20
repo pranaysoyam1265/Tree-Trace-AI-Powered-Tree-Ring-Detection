@@ -7,6 +7,8 @@ import { useAnalysis } from "@/lib/contexts/analysis-context"
 import { apiClient } from "@/lib/api-client"
 import { cacheResult } from "@/lib/result-storage"
 import { XCircle } from "lucide-react"
+import { RingDetectionVisualizer } from "@/components/RingDetectionVisualizer"
+
 
 /* ═══════════════════════════════════════════════════════════════════
    STEP 3: PROCESSING — Real API call to FastAPI backend
@@ -60,7 +62,6 @@ export function ProcessingStep() {
         const abortController = new AbortController()
         abortRef.current = abortController
 
-        // Build FormData
         const formData = new FormData()
         formData.append("image", state.file)
         formData.append("image_name", state.file.name)
@@ -76,12 +77,10 @@ export function ProcessingStep() {
         addLog("[  >>  ] Ring detection in progress...")
         addLog("[  >>  ] CS-TRD is analyzing your specimen.")
 
-        // Real API call — takes 10-30 seconds
         const result = await apiClient.analyze(formData, abortController.signal)
 
         if (cancelled || cancelledRef.current) return
 
-        // Cache result for instant load on results page
         cacheResult(result)
 
         addLog("")
@@ -146,120 +145,123 @@ export function ProcessingStep() {
         </p>
       </div>
 
-      {/* Glass-card terminal */}
-      <div className="glass-card glow-primary rounded-lg overflow-hidden">
+      {/* Main terminal card — full brutalist */}
+      <div className="border-2 border-[#333333] bg-[#0a0a0a] relative overflow-hidden">
+        {/* Corner accents */}
+        <div className="absolute top-[-1px] left-[-1px] w-2 h-2 bg-[#ea580c] z-10" />
+        <div className="absolute top-[-1px] right-[-1px] w-2 h-2 bg-[#ea580c] z-10" />
+        <div className="absolute bottom-[-1px] left-[-1px] w-2 h-2 bg-[#ea580c] z-10" />
+        <div className="absolute bottom-[-1px] right-[-1px] w-2 h-2 bg-[#ea580c] z-10" />
+
         {/* Title bar */}
-        <div className="flex items-center justify-between border-b border-border-default bg-[var(--bg-void)]/30 px-4 py-2.5">
+        <div className="flex items-center justify-between border-b-2 border-[#333333] bg-[#0d0d0d] px-4 py-2.5">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
               <motion.div
-                className="h-2.5 w-2.5 rounded-full border border-border-accent bg-accent"
-                animate={{ opacity: [1, 0.4, 1] }}
+                className="h-2 w-2 bg-[#ea580c]"
+                animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
-              <div className="h-2.5 w-2.5 rounded-full border border-border-default bg-text-disabled" />
-              <div className="h-2.5 w-2.5 rounded-full border border-border-default bg-text-disabled" />
+              <div className="h-2 w-2 bg-[#333333]" />
+              <div className="h-2 w-2 bg-[#333333]" />
             </div>
-            <span className="font-mono text-xs text-text-primary">
+            <span className="font-mono text-[10px] text-[#a3a3a3] uppercase tracking-[0.15em]">
               treetrace ~ ring-detector
             </span>
           </div>
-          <span className="font-mono text-xs text-text-secondary/50 tabular-nums">
-            {formatTime(elapsed)}
-          </span>
+          <div className="flex items-center gap-4">
+            <motion.span
+              className="font-mono text-[9px] text-[#ea580c] uppercase tracking-[0.2em]"
+              animate={{ opacity: [1, 0.4, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              ● ANALYZING
+            </motion.span>
+            <span className="font-mono text-xs text-[#555555] tabular-nums">
+              {formatTime(elapsed)}
+            </span>
+          </div>
         </div>
 
         {/* Two-column layout */}
-        <div className="grid lg:grid-cols-5 bg-bg-surface/50">
-          {/* Left: Ring loader + Elapsed (2 cols) */}
-          <div className="border-b border-border-default lg:col-span-2 lg:border-b-0 lg:border-r lg:border-border-default flex flex-col items-center justify-center p-10 gap-8">
-            {/* Concentric ring animation */}
-            <div className="relative flex items-center justify-center h-44 w-44">
-              <motion.div
-                className="absolute inset-0 rounded-full border border-dashed border-accent/20"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute inset-4 rounded-full bg-accent/5 blur-xl"
-                animate={{ opacity: [0.5, 0.8, 0.5] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              />
-              {[54, 42, 30, 18].map((r, i) => (
-                <motion.div
-                  key={r}
-                  className="absolute rounded-full border border-accent"
-                  style={{ width: r * 2, height: r * 2, opacity: 0.15 + i * 0.1 }}
-                  animate={{ rotate: i % 2 === 0 ? 360 : -360, scale: [1, 1.02, 1] }}
-                  transition={{
-                    rotate: { duration: 8 + i * 3, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 3 + i, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                />
-              ))}
-              <motion.div
-                className="absolute h-[2px] bg-gradient-to-r from-accent via-accent/80 to-transparent origin-left"
-                style={{ width: 60, filter: "blur(0.5px)" }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-              <div className="absolute w-[120px] h-[120px] bg-[conic-gradient(from_0deg,transparent_0deg,var(--color-accent)_90deg,transparent_90deg)] rounded-full origin-center animate-spin-slow pointer-events-none opacity-10" style={{ animationDuration: '3s' }} />
-              <div className="relative h-4 w-4 rounded-full bg-accent shadow-[0_0_20px_var(--color-accent)] z-10" />
-            </div>
-
-            {/* Elapsed readout */}
-            <div className="w-full max-w-[200px] flex flex-col gap-3 items-center">
-              <span className="font-mono text-3xl font-bold text-accent tabular-nums">
-                {formatTime(elapsed)}
+        <div className="grid lg:grid-cols-2">
+          {/* Left: Ring Detection Visualizer */}
+          <div className="border-b-2 border-[#333333] lg:border-b-0 lg:border-r-2 lg:border-[#333333] flex flex-col">
+            {/* Viz sub-header */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-[#222222] bg-[#0d0d0d]">
+              <span className="font-mono text-[9px] text-[#ea580c] uppercase tracking-[0.2em] font-bold">
+                // RING DETECTION VISUALIZER
               </span>
-              <motion.p
-                key={state.processMessage}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-mono text-[10px] text-text-tertiary/50 text-center h-4 truncate w-full"
-              >
-                {state.processMessage || "DETECTING RINGS..."}
-              </motion.p>
-              <p className="font-mono text-[9px] text-text-tertiary/30 text-center leading-relaxed">
-                CS-TRD typically takes 10-30 seconds.
-              </p>
+              <span className="font-mono text-[9px] text-[#555555] uppercase tracking-[0.15em] tabular-nums">
+                LIVE
+              </span>
             </div>
 
-            {/* Cancel */}
-            <AnimatePresence mode="wait">
-              {!showCancel ? (
-                <motion.button
-                  key="cancel-btn"
-                  onClick={() => setShowCancel(true)}
-                  className="flex items-center gap-1.5 font-mono text-[10px] text-text-tertiary/50 hover:text-status-error transition-colors"
-                >
-                  <XCircle className="h-3 w-3" /> Cancel Analysis
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="cancel-confirm"
+            {/* Ring Detection Visualizer */}
+            <div className="relative bg-[#080808] p-4 flex-1 flex items-center justify-center" style={{ minHeight: 340 }}>
+              <RingDetectionVisualizer width={320} height={320} />
+            </div>
+
+            {/* Status bar below canvas */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-[#222222] bg-[#0d0d0d]">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-2xl font-bold text-[#ea580c] tabular-nums tracking-tight">
+                    {formatTime(elapsed)}
+                  </span>
+                  <span className="font-mono text-[9px] text-[#555555] uppercase tracking-[0.15em]">
+                    ELAPSED
+                  </span>
+                </div>
+                <motion.p
+                  key={state.processMessage}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-4 font-mono text-[10px] rounded-lg border border-status-error/20 bg-status-error/[0.04] px-4 py-2"
+                  className="font-mono text-[10px] text-[#666666] uppercase tracking-[0.1em] truncate"
                 >
-                  <span className="text-text-primary">Abort analysis?</span>
-                  <button onClick={handleCancel} className="text-status-error font-bold hover:underline">Yes</button>
-                  <button onClick={() => setShowCancel(false)} className="text-text-secondary hover:text-text-primary">No</button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {state.processMessage || "DETECTING RING BOUNDARIES..."}
+                </motion.p>
+              </div>
+
+              {/* Cancel */}
+              <AnimatePresence mode="wait">
+                {!showCancel ? (
+                  <motion.button
+                    key="cancel-btn"
+                    onClick={() => setShowCancel(true)}
+                    className="flex items-center gap-1.5 font-mono text-[10px] text-[#555555] hover:text-[#ef4444] uppercase tracking-[0.1em] px-3 py-1.5 border border-[#333333] hover:border-[#ef4444]/30 transition-colors"
+                  >
+                    <XCircle className="h-3 w-3" /> ABORT
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="cancel-confirm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-3 font-mono text-[10px] border border-[#ef4444]/30 bg-[#ef4444]/[0.04] px-3 py-1.5"
+                  >
+                    <span className="text-[#a3a3a3] uppercase tracking-[0.1em]">Abort?</span>
+                    <button onClick={handleCancel} className="text-[#ef4444] font-bold uppercase hover:underline">Yes</button>
+                    <button onClick={() => setShowCancel(false)} className="text-[#666666] uppercase hover:text-white">No</button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Right: Boot sequence log (3 cols) */}
-          <div className="flex flex-col lg:col-span-3">
-            <div className="border-b border-border-subtle px-4 py-2 flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-accent/40" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-text-tertiary/60">
-                Processing Output
+          {/* Right: Processing Log */}
+          <div className="flex flex-col">
+            {/* Log sub-header */}
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-[#222222] bg-[#0d0d0d]">
+              <div className="h-1.5 w-1.5 bg-[#ea580c]" />
+              <span className="font-mono text-[9px] text-[#ea580c] uppercase tracking-[0.2em] font-bold">
+                // PROCESSING OUTPUT
               </span>
             </div>
-            <div className="bg-[var(--bg-void)]/10 p-4 overflow-y-auto font-mono text-xs" style={{ height: "380px" }}>
+
+            {/* Log content */}
+            <div className="bg-[#080808] p-4 overflow-y-auto font-mono text-xs" style={{ height: "420px" }}>
               {logLines.map((line, i) => (
                 <motion.div
                   key={i}
@@ -267,12 +269,12 @@ export function ProcessingStep() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.2, delay: 0.05 }}
                   className={`leading-relaxed ${line.type === "ok"
-                    ? "text-accent font-semibold mt-0.5"
+                    ? "text-[#22c55e] font-semibold mt-0.5"
                     : line.type === "dim"
-                      ? "text-text-tertiary/40"
+                      ? "text-[#444444]"
                       : line.type === "err"
-                        ? "text-status-error font-semibold"
-                        : "text-text-secondary/80"
+                        ? "text-[#ef4444] font-semibold"
+                        : "text-[#888888]"
                     }`}
                 >
                   {line.text || "\u00A0"}
@@ -282,12 +284,22 @@ export function ProcessingStep() {
                 <motion.span
                   animate={{ opacity: [1, 0] }}
                   transition={{ duration: 0.8, repeat: Infinity }}
-                  className="text-text-primary"
+                  className="text-[#ea580c]"
                 >
-                  _
+                  █
                 </motion.span>
               )}
               <div ref={logEndRef} />
+            </div>
+
+            {/* Log footer */}
+            <div className="flex items-center justify-between px-4 py-2 border-t border-[#222222] bg-[#0d0d0d]">
+              <span className="font-mono text-[9px] text-[#444444] uppercase tracking-[0.15em]">
+                {logLines.length} LINES
+              </span>
+              <span className="font-mono text-[9px] text-[#444444] uppercase tracking-[0.15em]">
+                CS-TRD TYPICALLY TAKES 10-30S
+              </span>
             </div>
           </div>
         </div>

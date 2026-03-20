@@ -5,6 +5,7 @@
 @import '../styles/themes/midnight-lab.css';
 @import '../styles/themes/amber-scope.css';
 @import '../styles/themes/high-contrast.css';
+@import '../styles/themes/light-mode.css';
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant midnight (&:is([data-theme="midnight"] *));

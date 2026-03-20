@@ -33,7 +33,7 @@ export function AchievementsGrid() {
   })
 
   return (
-    <div className="border-2 border-[#333333] bg-[#141414] p-6">
+    <div className="border-2 border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <span className="font-mono text-xs uppercase tracking-[2px] text-accent block mb-1">
@@ -110,7 +110,7 @@ export function AchievementsGrid() {
                 {isUnlocked ? (
                   <>
                     <span className="font-mono text-xs text-accent">Earned</span>
-                    <span className="font-mono text-xs text-muted-foreground">{new Date(unlockDate).toLocaleDateString()}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{unlockDate.split("T")[0]}</span>
                   </>
                 ) : (
                   <>

@@ -36,7 +36,6 @@ export function ProfileAvatar() {
 
   const menuItems = [
     { label: "PROFILE", href: "/profile" },
-    { label: `ANALYSES (${user.stats.totalAnalyses})`, href: "/profile" },
     { label: "SETTINGS", href: "/settings" },
   ]
 

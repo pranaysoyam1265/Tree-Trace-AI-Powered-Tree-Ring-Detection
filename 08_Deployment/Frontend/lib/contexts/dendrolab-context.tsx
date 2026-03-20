@@ -73,6 +73,8 @@ export type DendroLabAction =
   | { type: "SET_SPECIMENS"; payload: DendroSpecimen[] }
   | { type: "TOGGLE_EXPORT_DRAWER"; payload: boolean }
   | { type: "SET_GUIDE_MODE"; payload: boolean }
+  | { type: "LOAD_CLIMATE_DATA"; payload: ClimateDataset[] }
+  | { type: "SET_ACTIVE_CLIMATE_VARIABLE"; payload: string }
 
 function dendrolabReducer(state: DendroLabState, action: DendroLabAction): DendroLabState {
   switch (action.type) {
@@ -92,10 +94,19 @@ function dendrolabReducer(state: DendroLabState, action: DendroLabAction): Dendr
         try { localStorage.setItem("treetrace_dendrolab_guide_mode", String(action.payload)) } catch { }
       }
       return { ...state, guideMode: action.payload }
+    case "LOAD_CLIMATE_DATA":
+      return {
+        ...state,
+        climateDatasets: action.payload,
+        activeClimateVariable: action.payload.length > 0 ? action.payload[0].variable : null
+      }
+    case "SET_ACTIVE_CLIMATE_VARIABLE":
+      return { ...state, activeClimateVariable: action.payload }
     default:
       return state
   }
 }
+
 
 const DendroLabContext = createContext<{
   state: DendroLabState

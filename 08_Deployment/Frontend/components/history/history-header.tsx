@@ -1,4 +1,5 @@
-import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAnalysis } from "@/lib/contexts/analysis-context"
 
 interface HistoryHeaderProps {
   filteredCount: number
@@ -7,6 +8,9 @@ interface HistoryHeaderProps {
 }
 
 export function HistoryHeader({ filteredCount, totalCount, lastUpdated }: HistoryHeaderProps) {
+  const router = useRouter()
+  const { reset } = useAnalysis()
+
   return (
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 w-full mb-8 border-b-2 border-[#333333] pb-6">
       <div className="flex flex-col">
@@ -18,12 +22,15 @@ export function HistoryHeader({ filteredCount, totalCount, lastUpdated }: Histor
         </p>
       </div>
 
-      <Link
-        href="/analyze"
+      <button
+        onClick={() => {
+          reset()
+          router.push("/analyze")
+        }}
         className="shrink-0 flex items-center justify-center gap-2 border border-accent bg-accent/10 px-4 py-2 font-mono text-xs font-bold text-accent uppercase tracking-[2px] hover:bg-accent hover:text-white transition-colors"
       >
         [+ NEW ANALYSIS]
-      </Link>
+      </button>
     </div>
   )
 }

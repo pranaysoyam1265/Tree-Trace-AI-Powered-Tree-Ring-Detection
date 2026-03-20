@@ -41,6 +41,7 @@ export function AppearanceSettings({ searchQuery }: { searchQuery: string }) {
               { label: "Cyan", value: "#22D3EE" },
               { label: "Purple", value: "#A78BFA" },
               { label: "Amber", value: "#F59E0B" },
+              { label: "Electric Orange", value: "#EA580C" },
             ]}
             onChange={(v) => updateSection("appearance", { accentColor: v })}
           />

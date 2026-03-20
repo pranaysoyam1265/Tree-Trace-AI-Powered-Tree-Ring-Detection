@@ -1,7 +1,7 @@
 "use client"
 
 /* ═══════════════════════════════════════════════════════════════════
-   BRUTALIST AVATAR — Square with initials in accent color
+   BRUTALIST AVATAR — Circular with initials in accent color
    ═══════════════════════════════════════════════════════════════════ */
 
 interface BrutalAvatarProps {
@@ -21,7 +21,7 @@ export function BrutalAvatar({ name, src, size = 36, className = "" }: BrutalAva
 
   return (
     <div
-      className={`border-2 border-[#333333] bg-[#1a1a1a] flex items-center justify-center font-mono text-xs font-bold text-[#ea580c] uppercase overflow-hidden ${className}`}
+      className={`border-2 border-[#333333] bg-[#1a1a1a] flex items-center justify-center font-mono text-xs font-bold text-[#ea580c] uppercase overflow-hidden rounded-full ${className}`}
       style={{ width: size, height: size }}
     >
       {src ? (

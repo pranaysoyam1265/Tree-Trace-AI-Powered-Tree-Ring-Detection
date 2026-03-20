@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition, useRef } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { Pencil } from "lucide-react"
+import { updateProfile } from "@/lib/actions/user"
 
 /* ═══════════════════════════════════════════════════════════════════
    IDENTITY CARD — Profile dossier info, avatar, edit mode
@@ -11,6 +12,8 @@ import { Pencil } from "lucide-react"
 export function IdentityCard() {
   const { user } = useAuth()
   const [editing, setEditing] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Edit state
   const [name, setName] = useState(user?.name ?? "")
@@ -30,14 +33,51 @@ export function IdentityCard() {
   const filled = fields.filter(Boolean).length
   const completeness = Math.round((filled / fields.length) * 100)
 
+  const [isPending, startTransition] = useTransition()
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await fetch("/api/upload/avatar", { method: "POST", body: formData })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.url) {
+          window.location.reload()
+        }
+      }
+    } catch (error) {
+      console.error("Upload failed", error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleSave = () => {
-    // In a real app we'd call an API. For now, just exit edit mode.
-    // We could update the mock context here if we extended it.
-    setEditing(false)
+    startTransition(async () => {
+      try {
+        await updateProfile({ name, role, institution, location, bio })
+        // Since we updated the database, reloading the page or triggering auth-context refresh is ideal 
+        // For now, Next.js 'use client' + server actions doesn't auto-mutate unless we revalidate path.
+        // Fast-path: Update local auth context mock immediately for snappy UI
+        user.name = name
+        user.role = role
+        user.institution = institution
+        user.location = location
+        user.bio = bio
+        setEditing(false)
+      } catch (err) {
+        console.error("Failed to update profile", err)
+      }
+    })
   }
 
   return (
-    <div className="relative rounded-lg border border-border bg-[var(--bg-base)] p-6 overflow-hidden">
+    <div className="relative rounded-lg border border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] p-6 overflow-hidden">
       {/* HUD Background elements */}
       <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent/30" />
       <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent/30" />
@@ -62,9 +102,10 @@ export function IdentityCard() {
 
       {/* Avatar with completeness ring */}
       <div className="mb-6 flex justify-center">
-        <div className="relative group cursor-pointer">
+        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAvatarChange} />
           {/* Completeness ring */}
-          <svg width="132" height="132" viewBox="0 0 132 132" className="absolute -inset-1.5">
+          <svg width="132" height="132" viewBox="0 0 132 132" className="absolute -inset-1.5 pointer-events-none">
             <circle cx="66" cy="66" r="63" fill="none" stroke="var(--color-border-default)" strokeWidth="2" />
             <circle
               cx="66" cy="66" r="63"
@@ -79,16 +120,20 @@ export function IdentityCard() {
 
           {/* Avatar (120px) */}
           <div className="relative flex h-[120px] w-[120px] items-center justify-center rounded-full bg-gradient-to-br from-accent to-[var(--color-accent-dark)] ring-2 ring-accent/30 overflow-hidden">
-            {user.avatar ? (
+            {isUploading ? (
+              <span className="font-mono text-xs uppercase text-white animate-pulse">Wait...</span>
+            ) : user.avatar ? (
               <img src={user.avatar} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="font-mono text-3xl font-bold text-text-inverse">{initials}</span>
             )}
 
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="font-mono text-xs uppercase tracking-wider text-accent">Change</span>
-            </div>
+            {!isUploading && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="font-mono text-xs uppercase tracking-wider text-accent">Change</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -125,6 +170,24 @@ export function IdentityCard() {
               <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Short bio..." maxLength={160} rows={3}
                 className="w-full rounded border border-border/50 bg-card px-3 py-2 font-mono text-sm focus:border-accent focus:outline-none resize-none" />
             </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => setEditing(false)}
+                disabled={isPending}
+                className="px-4 py-2 font-mono text-xs uppercase text-muted-foreground hover:text-white border border-border/50 bg-[#1a1a1a]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isPending}
+                className="px-4 py-2 font-mono text-xs uppercase bg-accent text-white hover:bg-[#ff6a1a] shadow-[0_0_10px_rgba(234,88,12,0.3)]"
+              >
+                {isPending ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -155,39 +218,43 @@ export function IdentityCard() {
       </div>
 
       {/* Member Metadata */}
-      {!editing && (
-        <div className="rounded-md border border-[var(--color-border-subtle)] bg-[var(--bg-void)]/30 p-3 mb-4">
-          <div className="flex justify-between items-center mb-2 pb-2 border-b border-[var(--color-border-subtle)]">
-            <span className="font-mono text-xs text-muted-foreground/60 uppercase">Member Since</span>
-            <span className="font-mono text-xs text-muted-foreground">{memberDateStr} <span className="text-muted-foreground/60">({memberDays}d)</span></span>
+      {
+        !editing && (
+          <div className="rounded-md border border-[var(--color-border-subtle)] bg-[var(--bg-void)]/30 p-3 mb-4">
+            <div className="flex justify-between items-center mb-2 pb-2 border-b border-[var(--color-border-subtle)]">
+              <span className="font-mono text-xs text-muted-foreground/60 uppercase">Member Since</span>
+              <span className="font-mono text-xs text-muted-foreground">{memberDateStr} <span className="text-muted-foreground/60">({memberDays}d)</span></span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-mono text-xs text-muted-foreground/60 uppercase">Plan</span>
+              <span className="font-mono text-xs text-accent uppercase flex items-center gap-2">
+                {user.plan}
+                {user.plan === "free" && <button className="text-[11px] text-[var(--color-accent-dark)] hover:text-accent transition-colors">Upgrade →</button>}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="font-mono text-xs text-muted-foreground/60 uppercase">Plan</span>
-            <span className="font-mono text-xs text-accent uppercase flex items-center gap-2">
-              {user.plan}
-              {user.plan === "free" && <button className="text-[11px] text-[var(--color-accent-dark)] hover:text-accent transition-colors">Upgrade →</button>}
-            </span>
-          </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Edit Actions */}
-      {editing && (
-        <div className="flex gap-2 mt-4">
-          <button onClick={handleSave} className="flex-1 rounded bg-accent py-2.5 font-mono text-sm hover:bg-[var(--color-accent-hover)] text-text-inverse transition-colors font-semibold">
-            Save Profile
-          </button>
-          <button onClick={() => setEditing(false)} className="flex-1 rounded border border-border/50 py-2.5 font-mono text-sm hover:bg-bg-modifier-hover transition-colors">
-            Cancel
-          </button>
-        </div>
-      )}
+      {
+        editing && (
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} className="flex-1 rounded bg-accent py-2.5 font-mono text-sm hover:bg-[var(--color-accent-hover)] text-text-inverse transition-colors font-semibold">
+              Save Profile
+            </button>
+            <button onClick={() => setEditing(false)} className="flex-1 rounded border border-border/50 py-2.5 font-mono text-sm hover:bg-bg-modifier-hover transition-colors">
+              Cancel
+            </button>
+          </div>
+        )
+      }
 
       {/* Footer ID */}
       <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)] flex justify-between items-center">
         <span className="font-mono text-[11px] text-muted-foreground/60">ID: {user.id}</span>
         <span className="font-mono text-[11px] text-muted-foreground/60">COMPLETENESS: {completeness}%</span>
       </div>
-    </div>
+    </div >
   )
 }

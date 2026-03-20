@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useState, useRef, useCallback } from "react"
-import { TreeTraceStoryboard } from "@/components/cinematic/TreeTraceStoryboard"
 import { useAnalysisHistory } from "@/lib/hooks/use-analysis-history"
+import { useRouter } from "next/navigation"
+import { useAnalysis } from "@/lib/contexts/analysis-context"
+import TreeTraceDemoPlayer from "@/components/TreeTraceDemoPlayer"
 import { CornerAccents } from "@/components/ui/brutal/corner-accents"
 
 const ASCII_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=-~^"
@@ -54,6 +56,8 @@ function useAsciiFrame(rows: number, cols: number, enabled: boolean) {
 export function HeroSection() {
   const [motionEnabled, setMotionEnabled] = useState(true)
   const { recent, isLoaded } = useAnalysisHistory()
+  const router = useRouter()
+  const { reset } = useAnalysis()
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -70,7 +74,7 @@ export function HeroSection() {
       {/* Main Content — two-column layout */}
       <div className="relative z-20 flex min-h-screen items-start pt-[16vh] lg:pt-[20vh]">
         <div className="w-full max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.2fr]">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.4fr]">
             {/* Left: Text content */}
             <div className="flex flex-col items-start gap-6">
               <div className="flex flex-col items-start gap-4">
@@ -118,12 +122,15 @@ export function HeroSection() {
               <div className="flex flex-col items-start gap-3 w-full mt-2">
                 <div className="flex flex-col sm:flex-row gap-3 w-full">
                   {/* Primary CTA */}
-                  <a
-                    href="/analyze"
+                  <button
+                    onClick={() => {
+                      reset()
+                      router.push("/analyze")
+                    }}
                     className="flex items-center justify-center gap-2 bg-[#ea580c] text-white min-w-[220px] px-8 py-2.5 font-mono text-sm font-bold uppercase tracking-[0.2em] border-2 border-[#ea580c] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:bg-transparent hover:text-[#ea580c] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-none w-full sm:w-auto"
                   >
                     [▸ INITIATE ANALYSIS]
-                  </a>
+                  </button>
                   {/* Secondary CTA */}
                   <a
                     href="/docs"
@@ -171,8 +178,10 @@ export function HeroSection() {
                 </div>
 
                 {/* Inner Screen Bezel */}
-                <div className="relative bg-[#0a0a0a] border-t border-[#1f1f1f] overflow-hidden">
-                  <TreeTraceStoryboard />
+                <div className="relative bg-[#0a0a0a] border-t border-[#1f1f1f] w-full" style={{ height: '400px', overflow: 'hidden' }}>
+                  <div className="w-full h-full relative">
+                    <TreeTraceDemoPlayer />
+                  </div>
                 </div>
               </div>
             </div>

@@ -30,9 +30,9 @@ export function ActivityLog() {
     <div className="fixed bottom-4 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)]">
       <div className="overflow-hidden rounded-xl border border-border/30 bg-background/90 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
         {/* Header */}
-        <button
+        <div
           onClick={() => setIsOpen(!isOpen)}
-          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 border-b border-border/50 hover:bg-bg-modifier-hover transition-colors"
+          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 border-b border-border/50 hover:bg-bg-modifier-hover transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Terminal className="h-3.5 w-3.5 text-accent" />
@@ -48,7 +48,7 @@ export function ActivityLog() {
             </button>
             {isOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/60" /> : <ChevronUp className="h-3.5 w-3.5 text-muted-foreground/60" />}
           </div>
-        </button>
+        </div>
 
         {/* Log entries */}
         {isOpen && (

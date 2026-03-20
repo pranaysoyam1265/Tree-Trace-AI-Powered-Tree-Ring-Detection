@@ -1,0 +1,514 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE THEME — System-Wide Override
+   Clean Paper Brutalist — Scientific Print Layout
+
+   Strategy: Since components use hardcoded hex colors (#0a0a0a etc.),
+   we override every common dark-mode color pattern at the CSS level
+   when [data-theme="light"] is active.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── CSS Variables (for components using var() refs) ── */
+[data-theme="light"] {
+  --bg-void: #f5f5f0;
+  --bg-base: #fafaf5;
+  --bg-raised: #ffffff;
+  --bg-surface: #f0f0eb;
+  --bg-overlay: #ffffff;
+  --bg-highlight: #e8e8e3;
+
+  --accent-primary: #c2410c;
+  --accent-secondary: #ea580c;
+  --color-accent-hover: #ea580c;
+  --color-accent-dim: rgba(194, 65, 12, 0.15);
+  --color-accent-glow: rgba(194, 65, 12, 0.3);
+  --color-accent-dark: #9a3412;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-tertiary: #888888;
+  --text-disabled: #bbbbbb;
+  --text-inverse: #fafaf5;
+  --text-terminal: #c2410c;
+  --text-terminal-dim: rgba(194, 65, 12, 0.5);
+  --text-amber: #c2410c;
+  --text-mono: #444444;
+
+  --status-success: #16a34a;
+  --status-success-bg: rgba(22, 163, 74, 0.12);
+  --status-success-text: #16a34a;
+  --status-warning: #ca8a04;
+  --status-warning-bg: rgba(202, 138, 4, 0.12);
+  --status-warning-text: #ca8a04;
+  --status-error: #dc2626;
+  --status-error-bg: rgba(220, 38, 38, 0.12);
+  --status-error-text: #dc2626;
+  --error-red: #dc2626;
+  --status-info: #c2410c;
+  --status-info-bg: rgba(194, 65, 12, 0.1);
+  --status-info-text: #c2410c;
+  --status-processing: #c2410c;
+  --status-processing-bg: rgba(194, 65, 12, 0.08);
+
+  --border-subtle: #e0e0db;
+  --border-default: #cccccc;
+  --border-strong: #999999;
+  --border-accent: rgba(194, 65, 12, 0.4);
+  --border-accent-full: #c2410c;
+  --border-divider: #e0e0db;
+
+  --chart-primary: #c2410c;
+  --chart-secondary: #ea580c;
+  --chart-tertiary: #f97316;
+  --chart-quaternary: #666666;
+  --chart-grid: rgba(0, 0, 0, 0.08);
+  --chart-axis: #888888;
+  --chart-tooltip-bg: #ffffff;
+
+  --glow-primary: none;
+  --glow-secondary: none;
+  --scanline: rgba(194, 65, 12, 0.04);
+  --noise-opacity: 0;
+  --grid-opacity: 0;
+
+  --shadow-brutal: 4px 4px 0px 0px rgba(194, 65, 12, 1);
+  --shadow-brutal-sm: 2px 2px 0px 0px rgba(194, 65, 12, 1);
+  --shadow-brutal-white: 4px 4px 0px 0px rgba(0, 0, 0, 0.12);
+  --shadow-brutal-lg: 8px 8px 0px 0px rgba(194, 65, 12, 1);
+  --shadow-brutal-red: 4px 4px 0px 0px rgba(220, 38, 38, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BACKGROUND OVERRIDES
+   Remap every hardcoded dark background to light equivalents.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Pure black / near-black backgrounds → warm off-white */
+[data-theme="light"],
+[data-theme="light"] [class*="bg-[#000000]"],
+[data-theme="light"] [class*="bg-black"] {
+  --tw-bg-opacity: 1;
+}
+
+/* We use !important sparingly but it's necessary here to override
+   Tailwind's generated utility specificity on 600+ elements */
+
+[data-theme="light"] .bg-\[\#0a0a0a\] {
+  background-color: #fafaf5 !important;
+}
+
+[data-theme="light"] .bg-\[\#0a0a0a\]\/90 {
+  background-color: rgba(250, 250, 245, 0.95) !important;
+}
+
+[data-theme="light"] .bg-\[\#0d0d0d\] {
+  background-color: #f5f5f0 !important;
+}
+
+[data-theme="light"] .bg-\[\#111111\] {
+  background-color: #f0f0eb !important;
+}
+
+[data-theme="light"] .bg-\[\#141414\] {
+  background-color: #ebebeb !important;
+}
+
+[data-theme="light"] .bg-\[\#1a1a1a\] {
+  background-color: #e5e5e0 !important;
+}
+
+[data-theme="light"] .bg-\[\#1f1f1f\] {
+  background-color: #e0e0db !important;
+}
+
+[data-theme="light"] .bg-\[\#222222\] {
+  background-color: #ddddd8 !important;
+}
+
+[data-theme="light"] .bg-\[\#333333\] {
+  background-color: #cccccc !important;
+}
+
+[data-theme="light"] .bg-\[\#000000\] {
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] .bg-black {
+  background-color: #ffffff !important;
+}
+
+/* Opacity-based dark backgrounds */
+[data-theme="light"] .bg-black\/50 {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-theme="light"] .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+[data-theme="light"] .bg-black\/90 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEXT COLOR OVERRIDES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* White text → dark text */
+[data-theme="light"] .text-white {
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .text-white\/80 {
+  color: rgba(26, 26, 26, 0.8) !important;
+}
+
+[data-theme="light"] .text-white\/60 {
+  color: rgba(26, 26, 26, 0.6) !important;
+}
+
+[data-theme="light"] .text-white\/50 {
+  color: rgba(26, 26, 26, 0.5) !important;
+}
+
+[data-theme="light"] .text-white\/40 {
+  color: rgba(26, 26, 26, 0.4) !important;
+}
+
+/* Gray text adjustments for contrast */
+[data-theme="light"] .text-\[\#a3a3a3\] {
+  color: #555555 !important;
+}
+
+[data-theme="light"] .text-\[\#aaaaaa\] {
+  color: #555555 !important;
+}
+
+[data-theme="light"] .text-\[\#999999\] {
+  color: #666666 !important;
+}
+
+[data-theme="light"] .text-\[\#888888\] {
+  color: #666666 !important;
+}
+
+[data-theme="light"] .text-\[\#777777\] {
+  color: #777777 !important;
+}
+
+[data-theme="light"] .text-\[\#666666\] {
+  color: #888888 !important;
+}
+
+[data-theme="light"] .text-\[\#555555\] {
+  color: #999999 !important;
+}
+
+[data-theme="light"] .text-\[\#444444\] {
+  color: #888888 !important;
+}
+
+[data-theme="light"] .text-\[\#333333\] {
+  color: #aaaaaa !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BORDER COLOR OVERRIDES
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .border-\[\#111111\] {
+  border-color: #e0e0db !important;
+}
+
+[data-theme="light"] .border-\[\#222222\] {
+  border-color: #ddddd8 !important;
+}
+
+[data-theme="light"] .border-\[\#333333\] {
+  border-color: #cccccc !important;
+}
+
+[data-theme="light"] .border-\[\#444444\] {
+  border-color: #bbbbbb !important;
+}
+
+[data-theme="light"] .border-\[\#555555\] {
+  border-color: #aaaaaa !important;
+}
+
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .border-white\/\[0\.04\] {
+  border-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .border-white\/\[0\.06\] {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .border-white\/\[0\.08\] {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOVER STATE OVERRIDES
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .hover\:bg-\[\#111111\]:hover {
+  background-color: #e8e8e3 !important;
+}
+
+[data-theme="light"] .hover\:bg-\[\#1a1a1a\]:hover {
+  background-color: #e0e0db !important;
+}
+
+[data-theme="light"] .hover\:bg-\[\#222222\]:hover {
+  background-color: #ddddd8 !important;
+}
+
+[data-theme="light"] .hover\:text-white:hover {
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .hover\:text-\[\#ea580c\]:hover {
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .hover\:border-\[\#ea580c\]:hover {
+  border-color: #c2410c !important;
+}
+
+[data-theme="light"] .hover\:border-\[\#555555\]:hover {
+  border-color: #999999 !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCENT COLOR ADJUSTMENTS
+   Keep orange but deepen slightly for contrast on light bg
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .text-\[\#ea580c\] {
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .border-\[\#ea580c\] {
+  border-color: #c2410c !important;
+}
+
+/* Keep bg-[#ea580c] as-is — buttons should stay orange */
+
+/* ═══════════════════════════════════════════════════════════════════
+   RING / OUTLINE / DIVIDE OVERRIDES
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .ring-\[\#333333\] {
+  --tw-ring-color: #cccccc !important;
+}
+
+[data-theme="light"] .ring-\[\#222222\] {
+  --tw-ring-color: #ddddd8 !important;
+}
+
+[data-theme="light"] .divide-\[\#222222\]> :not([hidden])~ :not([hidden]) {
+  border-color: #ddddd8 !important;
+}
+
+[data-theme="light"] .divide-\[\#333333\]> :not([hidden])~ :not([hidden]) {
+  border-color: #cccccc !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPECIAL COMPONENT OVERRIDES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Glass / card panels */
+[data-theme="light"] .glass,
+[data-theme="light"] .glass-card,
+[data-theme="light"] .glass-subtle {
+  background: #ffffff !important;
+  border-color: #cccccc !important;
+}
+
+[data-theme="light"] .glass-border {
+  border-color: #cccccc !important;
+}
+
+/* Shadows that reference white/opacity */
+[data-theme="light"] .shadow-\[0_0_6px_\#22c55e\] {
+  box-shadow: 0 0 6px #16a34a !important;
+}
+
+[data-theme="light"] .shadow-\[0_0_6px_\#ef4444\] {
+  box-shadow: 0 0 6px #dc2626 !important;
+}
+
+/* Fix the green-500 status indicators for light mode */
+[data-theme="light"] .bg-green-500 {
+  background-color: #16a34a !important;
+}
+
+[data-theme="light"] .text-green-500 {
+  color: #16a34a !important;
+}
+
+[data-theme="light"] .text-green-400 {
+  color: #16a34a !important;
+}
+
+[data-theme="light"] .text-red-500 {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .text-red-400 {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .text-amber-500 {
+  color: #b45309 !important;
+}
+
+/* Semi-transparent dark fills → semi-transparent light fills */
+[data-theme="light"] .bg-green-500\/5 {
+  background-color: rgba(22, 163, 74, 0.08) !important;
+}
+
+[data-theme="light"] .bg-green-500\/10 {
+  background-color: rgba(22, 163, 74, 0.1) !important;
+}
+
+[data-theme="light"] .bg-red-500\/5 {
+  background-color: rgba(220, 38, 38, 0.08) !important;
+}
+
+[data-theme="light"] .bg-red-500\/10 {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+[data-theme="light"] .bg-\[\#ea580c\]\/10 {
+  background-color: rgba(194, 65, 12, 0.1) !important;
+}
+
+[data-theme="light"] .bg-\[\#ea580c\]\/5 {
+  background-color: rgba(194, 65, 12, 0.06) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCROLLBAR & SELECTION
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f5f5f0 !important;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cccccc !important;
+  border-color: #f5f5f0 !important;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #c2410c !important;
+}
+
+[data-theme="light"] ::selection {
+  background: #c2410c !important;
+  color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FOCUS RING
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] :focus-visible {
+  outline-color: #c2410c !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SVG / FILL / STROKE OVERRIDES
+   For inline SVG charts that use hardcoded dark colors
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] [fill="#333333"] {
+  fill: #cccccc;
+}
+
+[data-theme="light"] [fill="#1a1a1a"] {
+  fill: #e5e5e0;
+}
+
+[data-theme="light"] [fill="#0a0a0a"] {
+  fill: #fafaf5;
+}
+
+[data-theme="light"] [fill="#111111"] {
+  fill: #f0f0eb;
+}
+
+[data-theme="light"] [stroke="#333333"] {
+  stroke: #cccccc;
+}
+
+[data-theme="light"] [stroke="#444444"] {
+  stroke: #bbbbbb;
+}
+
+[data-theme="light"] [stroke="#1a1a1a"] {
+  stroke: #e5e5e0;
+}
+
+[data-theme="light"] [fill="#666666"] {
+  fill: #888888;
+}
+
+[data-theme="light"] [fill="#555555"] {
+  fill: #999999;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INLINE STYLE OVERRIDES (for style={{}} props in JSX)
+   These target elements with common hardcoded inline styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] [style*="background: #0a0a0a"],
+[data-theme="light"] [style*="background-color: #0a0a0a"],
+[data-theme="light"] [style*="background: rgb(10, 10, 10)"],
+[data-theme="light"] [style*="backgroundColor: '#0a0a0a'"] {
+  background-color: #fafaf5 !important;
+}
+
+[data-theme="light"] [style*="background: #141414"],
+[data-theme="light"] [style*="background-color: #141414"] {
+  background-color: #ebebeb !important;
+}
+
+[data-theme="light"] [style*="color: white"],
+[data-theme="light"] [style*="color: #ffffff"],
+[data-theme="light"] [style*="color: rgb(255, 255, 255)"] {
+  color: #1a1a1a !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BODY-LEVEL LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] body {
+  background-color: #fafaf5 !important;
+  color: #1a1a1a !important;
+}
+
+/* Ensure the html element bg also switches */
+html[data-theme="light"] {
+  background-color: #fafaf5 !important;
+}

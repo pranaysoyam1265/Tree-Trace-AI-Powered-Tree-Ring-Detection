@@ -42,7 +42,7 @@ export function AnalysisHistory() {
   )
 
   return (
-    <div className="rounded-none border-2 border-border bg-background dot-grid-bg p-6">
+    <div className="rounded-none border-2 border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] p-6">
 
       {/* Header / Toggle Button */}
       <button

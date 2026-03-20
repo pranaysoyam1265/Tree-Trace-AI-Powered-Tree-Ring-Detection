@@ -60,6 +60,57 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     loadSettings()
   }
 
+  // Apply Appearance Settings to DOM
+  useEffect(() => {
+    if (!isLoaded) return
+    const root = document.documentElement
+    const app = settings.appearance
+
+    // Accent Color
+    if (app.accentColor) {
+      root.style.setProperty("--accent-primary", app.accentColor)
+    } else {
+      root.style.removeProperty("--accent-primary")
+    }
+
+    // Font Size
+    const sizeMap = { small: "14px", medium: "16px", large: "18px" }
+    root.style.fontSize = sizeMap[app.fontSize] || "16px"
+
+    // Fonts
+    // Assuming UI font maps to sans/body and Mono font maps to mono.
+    // In actual implementation, Tailwind maps these, so we just set CSS vars
+    const uiFontMap: Record<string, string> = {
+      system: "system-ui, sans-serif",
+      inter: "'Inter', sans-serif",
+      ibm: "'IBM Plex Sans', sans-serif"
+    }
+
+    const monoFontMap: Record<string, string> = {
+      jetbrains: "'JetBrains Mono', monospace",
+      fira: "'Fira Code', monospace",
+      ibm_mono: "'IBM Plex Mono', monospace",
+      source: "'Source Code Pro', monospace"
+    }
+
+    if (app.uiFont && uiFontMap[app.uiFont]) {
+      root.style.setProperty("--font-sans", uiFontMap[app.uiFont])
+    }
+    if (app.monoFont && monoFontMap[app.monoFont]) {
+      root.style.setProperty("--font-mono", monoFontMap[app.monoFont])
+    }
+
+    // Interface Density
+    if (app.interfaceDensity === "compact") {
+      root.style.setProperty("--spacing-factor", "0.75")
+    } else if (app.interfaceDensity === "spacious") {
+      root.style.setProperty("--spacing-factor", "1.5")
+    } else {
+      root.style.setProperty("--spacing-factor", "1")
+    }
+
+  }, [settings.appearance, isLoaded])
+
   const saveSettings = () => {
     try {
       localStorage.setItem("treetrace_settings", JSON.stringify(settings))

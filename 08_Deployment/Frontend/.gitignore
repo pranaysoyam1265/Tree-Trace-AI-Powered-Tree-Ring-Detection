@@ -9,3 +9,10 @@ node_modules/
 .env*.local
 .DS_Store
 .vercel
+
+# Database
+*.db
+*.db-journal
+
+# Uploads
+public/uploads/

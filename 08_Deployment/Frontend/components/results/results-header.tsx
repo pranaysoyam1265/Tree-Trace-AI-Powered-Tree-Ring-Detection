@@ -5,6 +5,8 @@ import { ArrowLeft, Share2, Clock, Check } from "lucide-react"
 import type { AnalysisResult } from "@/lib/types"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import { useAnalysis } from "@/lib/contexts/analysis-context"
 
 interface Props {
   result: AnalysisResult
@@ -12,6 +14,8 @@ interface Props {
 
 export function ResultsHeader({ result }: Props) {
   const [copied, setCopied] = useState(false)
+  const router = useRouter()
+  const { reset } = useAnalysis()
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href)
@@ -34,13 +38,16 @@ export function ResultsHeader({ result }: Props) {
 
       {/* Left */}
       <div className="flex items-center gap-4 flex-wrap">
-        <Link
-          href="/analyze"
+        <button
+          onClick={() => {
+            reset()
+            router.push("/analyze")
+          }}
           className="group flex items-center gap-1.5 border border-border bg-surface px-3 py-2 font-mono text-xs uppercase tracking-[1px] text-muted-foreground transition-colors hover:border-accent hover:text-accent"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           [NEW ANALYSIS]
-        </Link>
+        </button>
 
         <div className="h-5 w-px bg-border hidden sm:block" />
 

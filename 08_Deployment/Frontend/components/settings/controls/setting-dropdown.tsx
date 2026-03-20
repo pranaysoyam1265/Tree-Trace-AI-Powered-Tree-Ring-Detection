@@ -32,10 +32,15 @@ export function SettingDropdown({ label, description, value, options, onChange, 
           disabled={disabled}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-none border border-border bg-background bg-none px-3 py-1.5 pr-8 font-mono text-[11px] text-foreground transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:cursor-not-allowed"
+          className="w-full appearance-none rounded-none border border-border bg-[#0a0a0a] px-3 py-1.5 pr-8 font-mono text-[11px] text-foreground transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:cursor-not-allowed"
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+            <option
+              key={opt.value}
+              value={opt.value}
+              disabled={opt.disabled}
+              className="bg-[#141414] text-white"
+            >
               {opt.label} {opt.disabled ? "(Coming Soon)" : ""}
             </option>
           ))}

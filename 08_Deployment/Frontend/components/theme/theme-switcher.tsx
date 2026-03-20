@@ -48,8 +48,20 @@ const THEMES = [
       accent: "#00FF88",
       text: "#FFFFFF",
     }
+  },
+  {
+    id: "light",
+    name: "Paper Mode",
+    description: "Clean light theme with warm paper-toned backgrounds for bright environments.",
+    colors: {
+      bgBase: "#FAFAF5",
+      bgSurface: "#F0F0EB",
+      accent: "#C2410C",
+      text: "#1A1A1A",
+    }
   }
 ]
+
 
 export function ThemeSwitcher() {
   const [mounted, setMounted] = useState(false)

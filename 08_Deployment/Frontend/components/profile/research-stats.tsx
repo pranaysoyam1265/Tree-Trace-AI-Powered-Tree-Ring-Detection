@@ -47,7 +47,7 @@ export function ResearchStats() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-background dot-grid-bg p-6 h-full flex flex-col">
+    <div className="rounded-lg border border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-5">
         <span className="font-mono text-xs uppercase tracking-[2px] text-accent">
           {"// FIELD METRICS"}

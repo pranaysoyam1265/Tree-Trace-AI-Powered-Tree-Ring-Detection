@@ -52,10 +52,10 @@ ENV/
 # LARGE DATA / ML / ENV FILES
 # ================================
 # Datasets and generated files (too large for GitHub)
-# 01_Raw_Data/
+01_Raw_Data/
 02_Preprocessed/
 04_Labels/
-# 05_Models/
+05_Models/
 06_ML_Core/
 07_Outputs/
 10_Notebooks/

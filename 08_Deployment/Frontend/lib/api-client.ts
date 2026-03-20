@@ -76,4 +76,13 @@ export const apiClient = {
 
   /** Full resolution image URL for a sample */
   getSampleFullImageUrl: (name: string) => `${API_BASE}/api/samples/${name}/full`,
+
+  /** Get real-time system status metrics */
+  getSystemStatus: () => get<{
+    cpu_load: number
+    gpu_load: number
+    memory_usage: number
+    uptime: number
+    active_nodes: any[]
+  }>("/api/system"),
 }

@@ -85,9 +85,9 @@ export function UploadStep() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-16 lg:grid-cols-[1fr_1.2fr]">
+      <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2">
         {/* Left Column — Text + Controls */}
-        <div className="flex flex-col items-start gap-8">
+        <div className="flex flex-col items-start gap-6 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,7 +95,7 @@ export function UploadStep() {
             className="flex flex-col items-start gap-4 w-full"
           >
             {/* Instructions Panel */}
-            <div className="border-2 border-[#333333] w-full bg-[#141414] p-5">
+            <div className="border border-[#333333] rounded-xl w-full bg-[#141414] p-6">
               <h3 className="font-mono text-[10px] font-bold text-[#ea580c] uppercase tracking-[0.2em] mb-3">
                   // INITIALIZATION
               </h3>
@@ -110,7 +110,7 @@ export function UploadStep() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="w-full max-w-md flex flex-col gap-4"
+            className="w-full flex flex-col gap-4"
           >
             {/* Drop Zone — enhanced with inner shadow and stronger interaction */}
             <div
@@ -118,7 +118,7 @@ export function UploadStep() {
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
-              className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-all duration-300 ${dragOver
+              className={`group relative cursor-pointer rounded-xl border-2 border-dashed p-16 text-center transition-all duration-300 min-h-[320px] flex flex-col justify-center ${dragOver
                 ? "border-border-accent bg-accent/[0.06] shadow-[inset_0_2px_20px_var(--color-accent),0_0_40px_var(--color-accent)]"
                 : "border-border-default/60 hover:border-border-accent/30 hover:bg-bg-surface/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
                 }`}
@@ -130,29 +130,29 @@ export function UploadStep() {
                 onChange={onFileChange}
                 className="hidden"
               />
-              <div className="flex flex-col items-center gap-4">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-xl transition-all duration-300 ${dragOver
+              <div className="flex flex-col items-center gap-6">
+                <div className={`flex h-20 w-20 items-center justify-center rounded-xl transition-all duration-300 ${dragOver
                   ? "bg-accent/20 text-accent scale-110"
                   : "bg-accent/10 text-accent group-hover:scale-105 group-hover:bg-accent/15"
                   }`}>
-                  <UploadCloud className="h-7 w-7" />
+                  <UploadCloud className="h-10 w-10" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">
+                  <p className="text-lg font-medium text-text-primary">
                     Drag & drop your image
                   </p>
-                  <p className="mt-1.5 text-xs text-text-secondary">
-                    or <span className="text-accent/80 font-medium">click to browse</span> your files
+                  <p className="mt-2 text-sm text-text-secondary">
+                    or <span className="text-accent/80 font-medium tracking-wide">click to browse</span> your files
                   </p>
                 </div>
-                <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-3 mt-2">
                   {["PNG", "JPG", "TIFF"].map((fmt) => (
-                    <span key={fmt} className="rounded-full border border-border-default/50 px-2.5 py-0.5 font-mono text-[10px] text-text-tertiary/70">
+                    <span key={fmt} className="rounded-full border border-border-default/50 px-3 py-1 font-mono text-xs text-text-tertiary/70">
                       {fmt}
                     </span>
                   ))}
-                  <span className="text-[10px] text-text-tertiary/40">•</span>
-                  <span className="font-mono text-[10px] text-text-tertiary/50">Max 10 MB</span>
+                  <span className="text-xs text-text-tertiary/40">•</span>
+                  <span className="font-mono text-xs text-text-tertiary/50 uppercase tracking-widest">Max 10 MB</span>
                 </div>
               </div>
             </div>
@@ -227,22 +227,22 @@ export function UploadStep() {
                 className="w-full flex flex-col gap-4"
               >
                 {/* Image Preview in glass-card */}
-                <div className="glass-card glow-primary rounded-lg overflow-hidden">
+                <div className="border-2 border-[#333333] bg-[#141414] overflow-hidden">
                   {/* Title bar */}
-                  <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
+                  <div className="flex items-center justify-between border-b-2 border-[#333333] bg-[#0d0d0d] px-4 py-2.5">
                     <div className="flex items-center gap-3">
                       <div className="flex gap-1.5">
-                        <div className="h-2.5 w-2.5 rounded-full bg-accent" />
-                        <div className="h-2.5 w-2.5 rounded-full bg-text-disabled" />
-                        <div className="h-2.5 w-2.5 rounded-full bg-border-strong" />
+                        <div className="h-2 w-2 bg-accent" />
+                        <div className="h-2 w-2 bg-[#333333]" />
+                        <div className="h-2 w-2 bg-[#333333]" />
                       </div>
-                      <span className="font-mono text-xs text-text-tertiary truncate max-w-[200px]">
+                      <span className="font-mono text-[10px] text-[#a3a3a3] uppercase tracking-[0.15em] truncate max-w-[200px]">
                         {state.metadata?.name}
                       </span>
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); clearFile() }}
-                      className="text-text-tertiary hover:text-status-error transition-colors p-1 rounded hover:bg-status-error/10"
+                      className="text-[#a3a3a3] hover:text-[#ef4444] transition-none p-1 hover:bg-[#ef4444]/10"
                       title="Remove image"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -250,21 +250,21 @@ export function UploadStep() {
                   </div>
 
                   {/* Image */}
-                  <div className="bg-black/20 p-3">
+                  <div className="bg-[#0a0a0a] border-b border-[#333333] p-3">
                     <img
                       src={state.previewUrl!}
                       alt="Uploaded cross-section"
-                      className="w-full max-h-[360px] object-contain rounded"
+                      className="w-full max-h-[360px] object-contain"
                     />
                   </div>
                 </div>
 
                 {/* Metadata specs */}
-                <div className="glass-card rounded-lg p-4">
+                <div className="border border-[#333333] bg-[#141414] p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <FileImage className="h-4 w-4 text-accent" />
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-text-tertiary">
-                      Image Metadata
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ea580c] font-bold">
+                      // METADATA
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
@@ -277,9 +277,9 @@ export function UploadStep() {
                         : []),
                     ].map((spec) => (
                       <div key={spec.label} className="flex items-baseline gap-2 font-mono text-xs">
-                        <span className="text-accent/40">{">"}</span>
-                        <span className="text-text-secondary shrink-0">{spec.label}:</span>
-                        <span className="font-semibold text-text-primary truncate">{spec.value}</span>
+                        <span className="text-[#ea580c]/60">{">"}</span>
+                        <span className="text-[#555555] uppercase tracking-[0.1em] shrink-0">{spec.label}:</span>
+                        <span className="font-semibold text-white truncate">{spec.value}</span>
                       </div>
                     ))}
                   </div>
@@ -302,7 +302,7 @@ export function UploadStep() {
                 exit={{ opacity: 0 }}
                 className="w-full flex flex-col gap-4"
               >
-                <div className="w-full rounded-xl glass-card p-16 flex flex-col items-center justify-center gap-6 min-h-[420px] relative overflow-hidden">
+                <div className="w-full border-2 border-[#333333] bg-[#0a0a0a] p-16 flex flex-col items-center justify-center gap-6 min-h-[420px] relative overflow-hidden">
                   {/* Faint ring ASCII art */}
                   <pre className="font-mono text-[10px] leading-[14px] text-accent/[0.05] select-none z-10">
                     {`   ████████████████████████████
@@ -316,10 +316,10 @@ export function UploadStep() {
    ████████████████████████████`}
                   </pre>
                   <div className="text-center z-10 mt-4">
-                    <p className="font-mono text-sm font-medium text-text-primary/40">
+                    <p className="font-mono text-sm font-medium text-text-primary/40 uppercase tracking-[0.15em]">
                       Awaiting Image Data
                     </p>
-                    <p className="font-mono text-[10px] text-text-tertiary/30 mt-1.5">
+                    <p className="font-mono text-[10px] text-text-tertiary/30 mt-1.5 uppercase tracking-widest">
                       Upload a cross-section to begin analysis
                     </p>
                   </div>
@@ -327,34 +327,34 @@ export function UploadStep() {
                   {/* Dynamic waiting mode background */}
                   <div className="absolute inset-0 pointer-events-none">
                     {/* Grid */}
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#33333333_1px,transparent_1px),linear-gradient(to_bottom,#33333333_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
 
                     {/* Scanning line */}
                     <motion.div
-                      className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent"
+                      className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#ea580c]/50 to-transparent"
                       animate={{ top: ["0%", "100%", "0%"] }}
                       transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                     />
 
                     {/* Decorative skeleton frame corners */}
-                    <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-white/[0.05]" />
-                    <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-white/[0.05]" />
-                    <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-white/[0.05]" />
-                    <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-white/[0.05]" />
+                    <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-[#333333]/40" />
+                    <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-[#333333]/40" />
+                    <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-[#333333]/40" />
+                    <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-[#333333]/40" />
                   </div>
                 </div>
 
                 {/* Skeleton metadata card */}
-                <div className="glass-card rounded-lg p-4 opacity-50">
+                <div className="border border-[#333333] bg-[#0a0a0a] p-4 opacity-50">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="h-4 w-4 bg-white/[0.05] rounded" />
-                    <div className="h-2 w-24 bg-white/[0.05] rounded" />
+                    <div className="h-4 w-4 bg-[#333333]" />
+                    <div className="h-2 w-24 bg-[#333333]" />
                   </div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <div className="h-2 w-12 bg-white/[0.05] rounded" />
-                        <div className="h-2 w-20 bg-white/[0.02] rounded" />
+                        <div className="h-2 w-12 bg-[#333333]" />
+                        <div className="h-2 w-20 bg-[#333333]/40" />
                       </div>
                     ))}
                   </div>
