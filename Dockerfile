@@ -9,31 +9,33 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies (needed for OpenCV and ML processing)
+# Install system dependencies (needed for OpenCV, Shapely, and git clone)
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     build-essential \
     libgeos-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY 08_Deployment/Backend/requirements.txt /app/backend_requirements.txt
-COPY cstrd_ipol/requirements.txt /app/cstrd_requirements.txt
+# Clone the CS-TRD library from its public GitHub repo
+RUN git clone --depth 1 https://github.com/hmarichal93/cstrd.git /app/cstrd_ipol
 
-# Install dependencies (CS-TRD first, then backend to ensure headless OpenCV takes precedence if possible)
-RUN pip install --no-cache-dir -r /app/cstrd_requirements.txt \
+# Set CSTRD_ROOT so the backend can find it
+ENV CSTRD_ROOT=/app/cstrd_ipol
+
+# Copy requirements and install dependencies
+COPY 08_Deployment/Backend/requirements.txt /app/backend_requirements.txt
+RUN pip install --no-cache-dir -r /app/cstrd_ipol/requirements.txt \
     && pip install --no-cache-dir -r /app/backend_requirements.txt \
-    && pip install --no-cache-dir scipy pandas scikit-image matplotlib scikit-learn
+    && pip install --no-cache-dir scipy scikit-image
 
 # Copy the entire project context into the container
-# This includes 01_Raw_Data, 08_Deployment, 09_Scripts, 06_ML_Core, and cstrd_ipol
 COPY . /app/
 
 # Expose the API port
 EXPOSE 8000
 
-# Set the default command to run the FastAPI app
-# It runs directly from the Backend folder, and resolves paths relative to the root (/app)
+# Set the working directory to the Backend folder and run
 WORKDIR /app/08_Deployment/Backend
 CMD ["python", "main.py"]
