@@ -13,16 +13,13 @@ from datetime import datetime
 import cv2
 import numpy as np
 
-PROJECT_ROOT = Path(r"C:\Users\prana\OneDrive\Desktop\TreeTrace")
-CSTRD_ROOT = Path(r"C:\Users\prana\OneDrive\Desktop\cstrd_ipol")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CSTRD_ROOT = Path(os.environ.get("CSTRD_ROOT", str(PROJECT_ROOT.parent / "cstrd_ipol")))
 
 # Max image dimension to send to CS-TRD.
 # Larger images are downscaled first to speed up detection significantly.
 # At 2300px a run takes ~95s. At 1200px it takes ~15-20s.
 MAX_PROCESSING_SIZE = 1200
-
-PROJECT_ROOT = Path(r"C:\Users\prana\OneDrive\Desktop\TreeTrace")
-CSTRD_ROOT = Path(r"C:\Users\prana\OneDrive\Desktop\cstrd_ipol")
 
 INPUT_DIR = PROJECT_ROOT / "01_Raw_Data" / "URuDendro" / "images"
 PITH_CSV = PROJECT_ROOT / "01_Raw_Data" / "URuDendro" / "pith_location.csv"
