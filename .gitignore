@@ -98,3 +98,5 @@ lerna-debug.log*
 *.tmp
 *.temp
 .cache/
+# CS-TRD Virtual Environment
+cstrd_ipol/cstrd/
