@@ -11,17 +11,19 @@ WORKDIR /app
 
 # Install system dependencies (needed for OpenCV and ML processing)
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     build-essential \
+    libgeos-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend requirements
-COPY 08_Deployment/Backend/requirements.txt /app/requirements.txt
+# Copy requirements
+COPY 08_Deployment/Backend/requirements.txt /app/backend_requirements.txt
+COPY cstrd_ipol/requirements.txt /app/cstrd_requirements.txt
 
-# Install Backend dependencies and additional common ML/Image processing libraries
-# CS-TRD and internal scripts typically depend on scientific packages
-RUN pip install --no-cache-dir -r /app/requirements.txt \
+# Install dependencies (CS-TRD first, then backend to ensure headless OpenCV takes precedence if possible)
+RUN pip install --no-cache-dir -r /app/cstrd_requirements.txt \
+    && pip install --no-cache-dir -r /app/backend_requirements.txt \
     && pip install --no-cache-dir scipy pandas scikit-image matplotlib scikit-learn
 
 # Copy the entire project context into the container
