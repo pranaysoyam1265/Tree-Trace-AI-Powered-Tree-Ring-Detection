@@ -61,15 +61,8 @@ export function IdentityCard() {
     startTransition(async () => {
       try {
         await updateProfile({ name, role, institution, location, bio })
-        // Since we updated the database, reloading the page or triggering auth-context refresh is ideal 
-        // For now, Next.js 'use client' + server actions doesn't auto-mutate unless we revalidate path.
-        // Fast-path: Update local auth context mock immediately for snappy UI
-        user.name = name
-        user.role = role
-        user.institution = institution
-        user.location = location
-        user.bio = bio
-        setEditing(false)
+        // Reload to re-fetch the user from the database via auth context
+        window.location.reload()
       } catch (err) {
         console.error("Failed to update profile", err)
       }
@@ -229,19 +222,7 @@ export function IdentityCard() {
         )
       }
 
-      {/* Edit Actions */}
-      {
-        editing && (
-          <div className="flex gap-2 mt-4">
-            <button onClick={handleSave} className="flex-1 rounded bg-accent py-2.5 font-mono text-sm hover:bg-[var(--color-accent-hover)] text-text-inverse transition-colors font-semibold">
-              Save Profile
-            </button>
-            <button onClick={() => setEditing(false)} className="flex-1 rounded border border-border/50 py-2.5 font-mono text-sm hover:bg-bg-modifier-hover transition-colors">
-              Cancel
-            </button>
-          </div>
-        )
-      }
+
 
       {/* Footer ID */}
       <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)] flex justify-between items-center">

@@ -13,6 +13,11 @@ export function CompleteStep() {
   const { saveSession } = useAnalysisHistory()
   const [copied, setCopied] = useState(false)
   const hasRedirected = useRef(false)
+  const [timestamp, setTimestamp] = useState("")
+
+  useEffect(() => {
+    setTimestamp(new Date().toLocaleString())
+  }, [])
 
   const resultUrl = `/results/${state.resultId ?? "demo"}`
 
@@ -133,7 +138,7 @@ export function CompleteStep() {
             <div className="flex items-center justify-between">
               <span className="font-mono text-[10px] text-[#555555] uppercase tracking-wider">Timestamp</span>
               <span className="font-mono text-xs text-white">
-                {new Date().toLocaleString()}
+                {timestamp || "—"}
               </span>
             </div>
             <div className="h-px bg-[#333333]" />
@@ -159,7 +164,9 @@ export function CompleteStep() {
           {/* Simple bar visualization */}
           <div className="flex items-end gap-[3px] h-[80px]">
             {Array.from({ length: 47 }, (_, i) => {
-              const height = 15 + Math.random() * 65
+              // Deterministic pseudo-random based on index to avoid hydration mismatch
+              const seed = ((i * 2654435761) >>> 0) / 4294967296
+              const height = 15 + seed * 65
               const isHighlight = i === 12 || i === 28 || i === 41
               return (
                 <div
