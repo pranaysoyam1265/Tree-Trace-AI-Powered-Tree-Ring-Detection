@@ -64,49 +64,6 @@ export function AccountSettings({ searchQuery }: { searchQuery: string }) {
         </section>
       )}
 
-      {/* CLOUD WORKSPACE PLAN */}
-      {hasResult(["plan", "subscription", "cloud", "license", "billing", "quota"]) && (
-        <section>
-          <h2 className="font-mono text-[10px] text-accent uppercase tracking-[2px] mb-4 flex items-center gap-2">
-            <MapPin size={12} />
-            {"// [WORKSPACE_LICENSE]"}
-          </h2>
-
-          <div className="rounded-lg border border-accent/20 bg-accent/[0.02] p-6 relative overflow-hidden group">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-accent/10 blur-3xl rounded-none-none" />
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-mono text-xl text-accent font-bold">RESEARCHER PRO</h3>
-                  <span className="bg-accent/20 text-accent border border-accent/30 px-2 py-0.5 rounded-none text-[9px] uppercase tracking-wider font-mono">
-                    Active
-                  </span>
-                </div>
-                <p className="font-mono text-[11px] text-foreground max-w-sm mb-4">
-                  Academic license granted via University Consortium. Infinite cloud processing up to 300 batches per month.
-                </p>
-
-                <div className="grid grid-cols-2 gap-2 font-mono text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><CheckCircle2 size={10} className="text-accent" /> GPU Pipeline Priority</span>
-                  <span className="flex items-center gap-1.5"><CheckCircle2 size={10} className="text-accent" /> 250GB Vector Storage</span>
-                  <span className="flex items-center gap-1.5"><CheckCircle2 size={10} className="text-accent" /> PDF Audit Reports</span>
-                  <span className="flex items-center gap-1.5"><CheckCircle2 size={10} className="text-accent" /> Direct Support Bridge</span>
-                </div>
-              </div>
-
-              <div className="shrink-0 flex flex-col gap-3 md:items-end">
-                <button className="px-5 py-2 rounded-none bg-white text-black hover:bg-zinc-200 font-mono text-sm font-medium transition-colors">
-                  Manage Billing
-                </button>
-                <button className="text-xs font-mono text-muted-foreground hover:text-white flex items-center gap-1 transition-colors">
-                  View Quota Limits <HelpCircle size={12} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* CONNECTED SERVICES */}
       {hasResult(["integration", "connect", "github", "google", "orcid", "services", "link"]) && (
@@ -130,8 +87,8 @@ export function AccountSettings({ searchQuery }: { searchQuery: string }) {
                 </div>
                 <button
                   className={`mt-4 sm:mt-0 font-mono text-xs px-4 py-1.5 rounded-none border transition-colors ${node.status === "Connected"
-                      ? "border-red-500/20 text-red-500 hover:bg-red-500/10"
-                      : "border-accent/20 text-accent hover:bg-accent/10"
+                    ? "border-red-500/20 text-red-500 hover:bg-red-500/10"
+                    : "border-accent/20 text-accent hover:bg-accent/10"
                     }`}
                 >
                   {node.status === "Connected" ? "Disconnect" : "Authorize"}

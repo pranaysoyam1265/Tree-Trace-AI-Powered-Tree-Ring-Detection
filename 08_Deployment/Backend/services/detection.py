@@ -16,7 +16,9 @@ def run_detection_for_upload(
     image_path: Path,
     cx: int,
     cy: int,
-    analysis_id: str
+    analysis_id: str,
+    params: dict | None = None,
+    mode: str = "adaptive",
 ) -> dict | None:
     """
     Run CS-TRD detection on an uploaded image.
@@ -37,7 +39,9 @@ def run_detection_for_upload(
         cx=cx,
         cy=cy,
         output_dir=output_dir,
-        save_imgs=True  # Save intermediate images
+        save_imgs=True,
+        params=params,
+        mode=mode,
     )
 
     if result is None:

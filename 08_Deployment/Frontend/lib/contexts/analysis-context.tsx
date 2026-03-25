@@ -15,17 +15,30 @@ export interface ImageMetadata {
   dimensions?: { w: number; h: number }
 }
 
+export interface DetectionParams {
+  sigma?: number
+  th_low?: number
+  th_high?: number
+  nr?: number
+  alpha?: number
+  min_chain_length?: number
+  preset?: string
+}
+
 export interface AnalysisState {
   step: 1 | 2 | 3 | 4
   file: File | null
   previewUrl: string | null
   metadata: ImageMetadata | null
   pith: { x: number; y: number } | null
+  pithMethod: "manual" | "auto"
+  detectionParams: DetectionParams
   processStatus: "idle" | "running" | "success" | "error"
   processMessage: string
   progress: number
   resultId: string | null
   error: string | null
+  detectionMode: "baseline" | "adaptive" | "adaptive_clahe"
 }
 
 type Action =
@@ -34,9 +47,12 @@ type Action =
   | { type: "CLEAR_FILE" }
   | { type: "SET_PITH"; x: number; y: number }
   | { type: "CLEAR_PITH" }
+  | { type: "SET_PITH_METHOD"; method: "manual" | "auto" }
+  | { type: "SET_DETECTION_PARAMS"; params: DetectionParams }
   | { type: "SET_PROCESS_STATUS"; status: AnalysisState["processStatus"]; message?: string; progress?: number }
   | { type: "SET_RESULT"; resultId: string }
   | { type: "SET_ERROR"; error: string }
+  | { type: "SET_DETECTION_MODE"; mode: AnalysisState["detectionMode"] }
   | { type: "RESET" }
 
 const initialState: AnalysisState = {
@@ -45,11 +61,14 @@ const initialState: AnalysisState = {
   previewUrl: null,
   metadata: null,
   pith: null,
+  pithMethod: "manual",
+  detectionParams: { preset: "auto" },
   processStatus: "idle",
   processMessage: "",
   progress: 0,
   resultId: null,
   error: null,
+  detectionMode: "adaptive",
 }
 
 function reducer(state: AnalysisState, action: Action): AnalysisState {
@@ -79,6 +98,12 @@ function reducer(state: AnalysisState, action: Action): AnalysisState {
       return { ...state, pith: { x: action.x, y: action.y }, error: null }
     case "CLEAR_PITH":
       return { ...state, pith: null }
+    case "SET_PITH_METHOD":
+      return { ...state, pithMethod: action.method }
+    case "SET_DETECTION_PARAMS":
+      return { ...state, detectionParams: { ...state.detectionParams, ...action.params } }
+    case "SET_DETECTION_MODE":
+      return { ...state, detectionMode: action.mode }
     case "SET_PROCESS_STATUS":
       return {
         ...state,
@@ -105,6 +130,9 @@ interface AnalysisContextValue {
   clearFile: () => void
   setPith: (x: number, y: number) => void
   clearPith: () => void
+  setPithMethod: (method: "manual" | "auto") => void
+  setDetectionParams: (params: DetectionParams) => void
+  setDetectionMode: (mode: AnalysisState["detectionMode"]) => void
   updateProcess: (status: AnalysisState["processStatus"], message?: string, progress?: number) => void
   setResult: (resultId: string) => void
   setError: (error: string) => void
@@ -145,6 +173,9 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   const clearFile = useCallback(() => dispatch({ type: "CLEAR_FILE" }), [])
   const setPith = useCallback((x: number, y: number) => dispatch({ type: "SET_PITH", x, y }), [])
   const clearPith = useCallback(() => dispatch({ type: "CLEAR_PITH" }), [])
+  const setPithMethod = useCallback((method: "manual" | "auto") => dispatch({ type: "SET_PITH_METHOD", method }), [])
+  const setDetectionParams = useCallback((params: DetectionParams) => dispatch({ type: "SET_DETECTION_PARAMS", params }), [])
+  const setDetectionMode = useCallback((mode: AnalysisState["detectionMode"]) => dispatch({ type: "SET_DETECTION_MODE", mode }), [])
 
   const updateProcess = useCallback(
     (status: AnalysisState["processStatus"], message?: string, progress?: number) => {
@@ -167,7 +198,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
   return (
     <AnalysisContext.Provider
-      value={{ state, setStep, setFile, clearFile, setPith, clearPith, updateProcess, setResult, setError, reset, goNext, goBack }}
+      value={{ state, setStep, setFile, clearFile, setPith, clearPith, setPithMethod, setDetectionParams, setDetectionMode, updateProcess, setResult, setError, reset, goNext, goBack }}
     >
       {children}
     </AnalysisContext.Provider>

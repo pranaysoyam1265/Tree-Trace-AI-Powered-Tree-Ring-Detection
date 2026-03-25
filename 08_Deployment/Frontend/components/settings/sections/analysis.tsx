@@ -8,7 +8,7 @@ import { SettingSlider } from "../controls/setting-slider"
 import { SettingToggle } from "../controls/setting-toggle"
 import { SettingInput } from "../controls/setting-input"
 
-import { DetectionParams } from "./detection-params"
+import { DetectionParamsSection } from "./detection-params"
 
 export function AnalysisSettings({ searchQuery }: { searchQuery: string }) {
   const { settings, updateSection } = useSettings()
@@ -99,7 +99,7 @@ export function AnalysisSettings({ searchQuery }: { searchQuery: string }) {
             />
 
             {/* Advanced Detection Parameters */}
-            <DetectionParams searchQuery={searchQuery} />
+            <DetectionParamsSection searchQuery={searchQuery} />
           </div>
         </section>
       )}

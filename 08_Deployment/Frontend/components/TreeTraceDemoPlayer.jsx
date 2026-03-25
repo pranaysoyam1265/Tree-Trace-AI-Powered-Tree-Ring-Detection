@@ -432,38 +432,32 @@ function SpecimenCanvas({ onPithSet, canvasRef: externalRef, width = 340, height
 }
 
 // ── Shared Components ────────────────────────────────────────────
-function BrutalCard({ children, className = "", accentGlow = false, cornerAccents = true }) {
+function BrutalCard({ children, className = "", accentGlow = false, cornerAccents = false }) {
   return (
-    <div style={{ position: "relative" }}>
-      {cornerAccents && <>
-        <span style={{ position: "absolute", top: -3, left: -3, width: 6, height: 6, background: "#ea580c", zIndex: 1 }} />
-        <span style={{ position: "absolute", top: -3, right: -3, width: 6, height: 6, background: "#ea580c", zIndex: 1 }} />
-        <span style={{ position: "absolute", bottom: -3, left: -3, width: 6, height: 6, background: "#ea580c", zIndex: 1 }} />
-        <span style={{ position: "absolute", bottom: -3, right: -3, width: 6, height: 6, background: "#ea580c", zIndex: 1 }} />
-      </>}
-      <div style={{
-        position: "relative",
-        boxShadow: accentGlow ? "0 0 14px rgba(234,88,12,0.2), inset 0 1px 0 rgba(255,255,255,0.05)" : "inset 0 1px 0 rgba(255,255,255,0.05)",
-      }} className={`border border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md ${className}`}>
-        {children}
-      </div>
+    <div style={{
+      position: "relative",
+      borderRadius: "12px",
+      boxShadow: accentGlow ? "0 0 20px rgba(234,88,12,0.15), inset 0 1px 0 rgba(255,255,255,0.1)" : "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 12px rgba(0,0,0,0.2)",
+    }} className={`border border-white/10 bg-[#141414]/80 backdrop-blur-lg overflow-hidden ${className}`}>
+      {children}
     </div>
   );
 }
 
 function SectionHeader({ title }) {
   return (
-    <div style={{ borderBottom: "1px solid #222", paddingBottom: 6, marginBottom: 10 }}>
-      <span style={{ fontFamily: "var(--font-pixel), sans-serif", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888" }}>
-        // {title}
+    <div style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: 8, marginBottom: 12 }}>
+      <span style={{ ...S.sans, fontWeight: 600, fontSize: 11, letterSpacing: "0.05em", textTransform: "uppercase", color: "#a3a3a3" }}>
+        {title}
       </span>
     </div>
   );
 }
 
 const S = {
-  pixel: { fontFamily: "var(--font-pixel), sans-serif" },
+  pixel: { fontFamily: "var(--font-pixel), monospace" },
   mono: { fontFamily: "var(--font-jetbrains), monospace" },
+  sans: { fontFamily: "var(--font-mono), monospace" },
   label: { fontFamily: "var(--font-jetbrains), monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" },
   tiny: { fontFamily: "var(--font-jetbrains), monospace", fontSize: 9, color: "#888" },
 };
@@ -478,7 +472,7 @@ function DemoNavbar({ breadcrumb }) {
     return () => clearInterval(id);
   }, []);
   return (
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 48, background: "#141414", borderBottom: "2px solid #333", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px" }}>
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 48, background: "rgba(20,20,20,0.6)", backdropFilter: "blur(10px)", borderBottom: "1px solid rgba(255,255,255,0.05)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <TreeTraceLogo width={36} height={24} />
         <span style={{ ...S.mono, fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#ea580c", textShadow: "0 0 12px rgba(234,88,12,0.4)" }}>TREETRACE</span>
@@ -496,8 +490,8 @@ function DemoNavbar({ breadcrumb }) {
           <div style={{ width: 5, height: 5, background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.6)" }} />
           <span style={{ ...S.mono, fontSize: 8, letterSpacing: "0.15em", color: "#555", textTransform: "uppercase" }}>ONLINE</span>
         </div>
-        <button style={{ ...S.mono, fontSize: 9, letterSpacing: "0.15em", color: "#555", background: "transparent", border: "1px solid #333", padding: "2px 8px", cursor: "pointer" }}>
-          [SIGN IN]
+        <button style={{ ...S.mono, borderRadius: "4px", fontSize: 9, letterSpacing: "0.15em", color: "#888", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "4px 12px", cursor: "pointer" }}>
+          SIGN IN
         </button>
       </div>
     </div>
@@ -570,41 +564,24 @@ function Stage1Landing({ isActive, cursor }) {
           </BrutalCard>
         </div>
         {/* RIGHT: text */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-            style={{ ...S.mono, fontSize: 9, letterSpacing: "0.3em", color: "#555", textTransform: "uppercase" }}>
-            // DENDROCHRONOLOGY TERMINAL
-          </motion.p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-            <div style={{ ...S.pixel, fontSize: 20, fontWeight: 700, lineHeight: 1.15, color: "#fff" }}>DECODE EVERY RING.</div>
-            <div style={{ ...S.pixel, fontSize: 20, fontWeight: 700, lineHeight: 1.15, color: "#ea580c", textShadow: "0 0 20px rgba(234,88,12,0.35)" }}>REVEAL EVERY YEAR.</div>
+            <div style={{ ...S.sans, fontSize: 18, fontWeight: 700, lineHeight: 1.15, color: "#fff", letterSpacing: "0.02em" }}>DECODE EVERY RING.</div>
+            <div style={{ ...S.sans, fontSize: 18, fontWeight: 700, lineHeight: 1.15, color: "#ea580c", textShadow: "0 0 20px rgba(234,88,12,0.35)", letterSpacing: "0.02em" }}>REVEAL EVERY YEAR.</div>
           </motion.div>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
-            style={{ ...S.mono, fontSize: 11, color: "#888", lineHeight: 1.6, maxWidth: 300 }}>
-            AI-powered tree ring detection. Upload a cross-section, mark the pith, and receive ring count, growth widths, health assessment and the complete life story of your specimen.
+            style={{ ...S.mono, fontSize: 10, color: "#a3a3a3", lineHeight: 1.5, maxWidth: 300, marginBottom: 8 }}>
+            AI-powered tree ring detection. Upload a cross-section, mark the pith, and receive ring counts, growth widths, health assessments and the life story of your specimen.
           </motion.p>
-          <div style={{ display: "flex", gap: 8 }}>
-            {[{ value: "91%", label: "AVG PRECISION" }, { value: "24s", label: "AVG PROCESS" }, { value: "185", label: "DATASET" }].map((s, i) => (
-              <motion.div key={s.label} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 + i * 0.1 }}
-                className="border border-border/50 bg-[var(--bg-surface)]/60 backdrop-blur-md" style={{ flex: 1, padding: "10px 8px", position: "relative", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}>
-                <span style={{ position: "absolute", top: -2, left: -2, width: 4, height: 4, background: "#ea580c" }} />
-                <span style={{ position: "absolute", top: -2, right: -2, width: 4, height: 4, background: "#ea580c" }} />
-                <span style={{ position: "absolute", bottom: -2, left: -2, width: 4, height: 4, background: "#ea580c" }} />
-                <span style={{ position: "absolute", bottom: -2, right: -2, width: 4, height: 4, background: "#ea580c" }} />
-                <p style={{ ...S.mono, fontSize: 20, fontWeight: 700, color: "#fff" }}>{s.value}</p>
-                <p style={{ ...S.mono, fontSize: 8, letterSpacing: "0.18em", color: "#888", textTransform: "uppercase", marginTop: 2 }}>{s.label}</p>
-              </motion.div>
-            ))}
-          </div>
           <motion.button ref={btnRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}
             style={{
-              ...S.mono, width: "100%", height: 40, background: btnPressed ? "#c24a0a" : "#ea580c", color: "#fff",
-              fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 700,
-              border: "2px solid #ea580c", cursor: "pointer", borderRadius: 0,
-              boxShadow: btnPressed ? "none" : "4px 4px 0px rgba(255,255,255,0.1), 0 0 20px rgba(234,88,12,0.3)",
-              transform: btnPressed ? "translate(2px,2px)" : "none",
+              ...S.mono, width: "100%", height: 36, background: btnPressed ? "#c24a0a" : "#ea580c", color: "#fff",
+              fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700,
+              border: "1px solid " + (btnPressed ? "#c24a0a" : "#ea580c"), cursor: "pointer", borderRadius: "6px", marginTop: 4,
+              boxShadow: btnPressed ? "none" : "0 4px 14px rgba(234,88,12,0.3)",
+              transform: btnPressed ? "translate(0, 2px)" : "none",
             }}>
-            [▸ START ANALYSIS ──────────────────]
+            START ANALYSIS ▸
           </motion.button>
         </div>
       </div>
@@ -1253,30 +1230,28 @@ function Stage7History({ isActive, cursor, onEndCycle }) {
   return (
     <div style={{ padding: "12px 20px", height: "100%", overflowY: "auto", position: "relative" }}>
       <div style={{ ...S.label, marginBottom: 10 }}>// ANALYSIS ARCHIVE ── 1 RECORD</div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, border: "2px solid #333", background: "#0a0a0a", padding: "8px 12px", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#111", borderRadius: "8px", padding: "8px 12px", marginBottom: 10 }}>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="4" stroke="#555" strokeWidth="1" /><line x1="8" y1="8" x2="11" y2="11" stroke="#555" strokeWidth="1" /></svg>
         <span style={{ ...S.mono, fontSize: 10, color: "#555", letterSpacing: "0.15em" }}>search_specimens...</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <span style={{ ...S.mono, fontSize: 8, color: "#555", letterSpacing: "0.1em" }}>☐ SELECT ALL</span>
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", gap: "4px" }}>
           {["▦ GRID", "≡ TABLE", "▬ TIMELINE"].map((v, i) => (
-            <button key={v} style={{ ...S.mono, padding: "4px 10px", fontSize: 8, letterSpacing: "0.1em", border: "2px solid #333", background: i === 0 ? "#ea580c" : "transparent", color: i === 0 ? "#fff" : "#555", cursor: "pointer" }}>{v}</button>
+            <button key={v} style={{ ...S.mono, padding: "4px 10px", fontSize: 8, letterSpacing: "0.1em", border: "1px solid transparent", borderRadius: "4px", background: i === 0 ? "#ea580c" : "transparent", color: i === 0 ? "#fff" : "#888", cursor: "pointer" }}>{v}</button>
           ))}
         </div>
         <span style={{ ...S.mono, fontSize: 8, color: "#555" }}>SORT: [DATE ▾]  1 OF 1</span>
       </div>
       <motion.div id="history-card" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}>
         <div className="bg-[var(--bg-surface)]/60 backdrop-blur-md" style={{
-          border: `2px solid ${cardHighlight ? "rgba(234,88,12,0.5)" : "rgba(255,255,255,0.1)"}`,
+          border: `1px solid ${cardHighlight ? "rgba(234,88,12,0.5)" : "rgba(255,255,255,0.1)"}`,
+          borderRadius: "12px",
           display: "flex", alignItems: "center", gap: 14, padding: 14, position: "relative",
           boxShadow: cardHighlight ? "0 0 16px rgba(234,88,12,0.2), inset 0 1px 0 rgba(255,255,255,0.05)" : "inset 0 1px 0 rgba(255,255,255,0.05)",
           transition: "border-color 0.2s, box-shadow 0.2s"
         }}>
-          {[{ top: -3, left: -3 }, { top: -3, right: -3 }, { bottom: -3, left: -3 }, { bottom: -3, right: -3 }].map((p, i) => (
-            <span key={i} style={{ position: "absolute", width: 5, height: 5, background: "#ea580c", ...p }} />
-          ))}
-          <div style={{ width: 68, height: 68, background: "#000", border: "1px solid #333", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 68, height: 68, background: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <RingCanvas numRings={10} animated={false} canvasSize={66} />
           </div>
           <div style={{ flex: 1 }}>
@@ -1284,7 +1259,7 @@ function Stage7History({ isActive, cursor, onEndCycle }) {
             <p style={{ ...S.mono, fontSize: 9, color: "#888", marginTop: 3 }}>Pine Specimen — 2001 TO 2023</p>
             <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
               {[["23 RINGS", "#888", "#333"], ["✓ COMPLETED", "#22c55e", "#22c55e"], ["HIGH CONF", "#ea580c", "#ea580c"]].map(([t, c, bc]) => (
-                <span key={t} style={{ ...S.mono, fontSize: 7, border: `1px solid ${bc}`, color: c, padding: "2px 6px", letterSpacing: "0.1em" }}>{t}</span>
+                <span key={t} style={{ ...S.mono, fontSize: 7, border: `1px solid ${bc}`, borderRadius: "4px", background: "rgba(255,255,255,0.02)", color: c, padding: "2px 6px", letterSpacing: "0.1em" }}>{t}</span>
               ))}
             </div>
             <p style={{ ...S.mono, fontSize: 8, color: "#555", marginTop: 6 }}>RINGS: 23  │  AGE: ~23 YRS  │  F1: 0.75  │  TIME: 24.3S</p>
@@ -1293,8 +1268,8 @@ function Stage7History({ isActive, cursor, onEndCycle }) {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
             <p style={{ ...S.mono, fontSize: 7, color: "#555" }}>2 MINUTES AGO</p>
             <motion.button id="view-btn"
-              style={{ ...S.mono, background: "#ea580c", color: "#fff", border: "2px solid #ea580c", fontSize: 9, letterSpacing: "0.15em", padding: "6px 18px", cursor: "pointer", boxShadow: "4px 4px 0px rgba(255,255,255,0.1), 0 0 12px rgba(234,88,12,0.25)" }}>
-              [VIEW ▸]
+              style={{ ...S.mono, background: "#ea580c", color: "#fff", border: "1px solid #ea580c", borderRadius: "6px", fontSize: 9, letterSpacing: "0.15em", padding: "6px 18px", cursor: "pointer", boxShadow: "0 4px 12px rgba(234,88,12,0.25)" }}>
+              VIEW ▸
             </motion.button>
           </div>
         </div>
@@ -1379,9 +1354,7 @@ export default function TreeTraceDemoPlayer() {
   ];
 
   return (
-    <div ref={playerRef} style={{ position: "relative", width: "706px", height: "400px", background: "#0a0a0a", overflow: "hidden", fontFamily: "var(--font-jetbrains), monospace" }}>
-      {/* Subtle scanlines */}
-      <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 3px)", pointerEvents: "none", zIndex: 100 }} />
+    <div ref={playerRef} className="w-full h-full" style={{ position: "relative", maxWidth: "706px", maxHeight: "400px", background: "#0a0a0a", overflow: "hidden", fontFamily: "var(--font-jetbrains), monospace", margin: "0 auto", borderRadius: "8px" }}>
 
       <DemoNavbar breadcrumb={STAGE_CONFIG[currentStage].breadcrumb} />
 

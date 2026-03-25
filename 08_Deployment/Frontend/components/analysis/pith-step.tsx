@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState, useEffect } from "react"
 import { useAnalysis } from "@/lib/contexts/analysis-context"
-import { Crosshair, RotateCcw, ZoomIn, ZoomOut, Maximize, MousePointer2 } from "lucide-react"
+import { Crosshair, RotateCcw, ZoomIn, ZoomOut, Maximize, MousePointer2, Info } from "lucide-react"
 
 /* ═══════════════════════════════════════════════════════════════════
    STEP 2: PITH SELECTION — Domain Section Style (Premium)
@@ -10,7 +10,7 @@ import { Crosshair, RotateCcw, ZoomIn, ZoomOut, Maximize, MousePointer2 } from "
    ═══════════════════════════════════════════════════════════════════ */
 
 export function PithStep() {
-  const { state, setPith, clearPith, goNext, goBack } = useAnalysis()
+  const { state, setPith, clearPith, setPithMethod, setDetectionMode, goNext, goBack } = useAnalysis()
   const containerRef = useRef<HTMLDivElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
   const [zoom, setZoom] = useState(1)
@@ -321,6 +321,58 @@ export function PithStep() {
               )}
             </div>
 
+            {/* Detection Mode Selector */}
+            <div className="border-t-2 border-[#333333] p-5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ea580c] block mb-3 font-bold">
+                // DETECTION MODE
+              </span>
+              <div className="flex flex-col gap-3">
+                {[
+                  { id: "baseline", title: "Baseline", desc: "Original fixed thresholds tuned for benchmarks." },
+                  { id: "adaptive", title: "Adaptive", desc: "Auto-adjusts thresholds based on image.", best: true },
+                  { id: "adaptive_clahe", title: "Adaptive + CLAHE", desc: "Contrast enhancement for stained/low-contrast images." },
+                ].map((mode) => (
+                  <label key={mode.id} className={`flex items-start gap-3 border-2 ${state.detectionMode === mode.id ? "border-[#ea580c] bg-[#ea580c]/10" : "border-[#333333] bg-[#0d0d0d] hover:border-[#555]"} p-3 cursor-pointer transition-colors relative`}>
+                    <input
+                      type="radio"
+                      name="detectionMode"
+                      checked={state.detectionMode === mode.id}
+                      onChange={() => setDetectionMode(mode.id as any)}
+                      className="mt-1 flex-shrink-0 h-3 w-3 appearance-none rounded-full border border-[#ea580c] checked:bg-[#ea580c] checked:border-transparent outline-none opacity-0 absolute"
+                    />
+                    <div className={`mt-1 flex-shrink-0 h-3 w-3 rounded-full border ${state.detectionMode === mode.id ? "border-[#ea580c] bg-[#ea580c] shadow-[0_0_8px_rgba(234,88,12,0.8)]" : "border-[#555] bg-transparent"}`} />
+                    <div className="flex flex-col gap-1">
+                      <span className={`font-mono text-[11px] font-bold uppercase tracking-wider ${state.detectionMode === mode.id ? "text-white" : "text-[#a3a3a3]"}`}>
+                        {mode.title} {mode.best && <span className="text-[#22c55e] ml-2 text-[9px] tracking-wider">[RECOMMENDED]</span>}
+                      </span>
+                      <span className="font-mono text-[9px] text-[#888] leading-tight">
+                        {mode.desc}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {/* How it Works Panel */}
+              <details className="mt-4 group border border-[#333333] bg-[#0d0d0d] overflow-hidden">
+                <summary className="font-mono text-[10px] uppercase tracking-[0.1em] text-[#a3a3a3] cursor-pointer p-3 hover:text-[#ea580c] hover:bg-[#141414] list-none flex items-center justify-between border-b border-transparent group-open:border-[#333333]">
+                  <span className="flex items-center gap-2"><Info className="h-3 w-3" /> [?] HOW IT WORKS: DETECTION MODES</span>
+                </summary>
+                <div className="p-4 bg-[#0a0a0a] font-mono text-[10px] text-[#888] leading-relaxed flex flex-col gap-3">
+                  <p className="text-[#a3a3a3] font-bold">The AI extracts visual ridges to trace continuous tree ring boundaries.</p>
+                  <div>
+                    <span className="text-white font-bold">1. Baseline:</span> Uses strict, static contrast thresholds. Best for perfectly clean, high-contrast, uniformly lit benchmark imagery. Fails on shadows.
+                  </div>
+                  <div>
+                    <span className="text-[#ea580c] font-bold">2. Adaptive:</span> Dynamically calculates local brightness thresholds over the specimen. Adjusts to natural lighting gradients, making it the most reliable for standard lab photos.
+                  </div>
+                  <div>
+                    <span className="text-white font-bold">3. Adaptive + CLAHE:</span> Applies Contrast Limited Adaptive Histogram Equalization. Mathematically forces contrast in flat, dark, or stained wood where rings are normally invisible to cameras.
+                  </div>
+                </div>
+              </details>
+            </div>
+
             {/* Bottom actions bar */}
             <div className="border-t-2 border-[#333333] p-4 flex items-center justify-between bg-[#0d0d0d]">
               <button
@@ -329,13 +381,27 @@ export function PithStep() {
               >
                 [← BACK]
               </button>
-              <button
-                onClick={goNext}
-                disabled={!state.pith}
-                className="flex items-center gap-2 border-2 border-[#ea580c] bg-[#ea580c] px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.15em] text-white hover:bg-transparent hover:text-[#ea580c] transition-none disabled:opacity-20 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] disabled:shadow-none active:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
-              >
-                [▸ START ANALYSIS]
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setPithMethod("auto")
+                    goNext()
+                  }}
+                  className="flex items-center gap-2 border-2 border-[#333333] px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.15em] text-[#a3a3a3] hover:text-[#ea580c] hover:border-[#ea580c] transition-none"
+                >
+                  [⚡ AUTO-DETECT PITH]
+                </button>
+                <button
+                  onClick={() => {
+                    setPithMethod("manual")
+                    goNext()
+                  }}
+                  disabled={!state.pith}
+                  className="flex items-center gap-2 border-2 border-[#ea580c] bg-[#ea580c] px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.15em] text-white hover:bg-transparent hover:text-[#ea580c] transition-none disabled:opacity-20 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] disabled:shadow-none active:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
+                >
+                  [▸ START ANALYSIS]
+                </button>
+              </div>
             </div>
           </div>
         </div>

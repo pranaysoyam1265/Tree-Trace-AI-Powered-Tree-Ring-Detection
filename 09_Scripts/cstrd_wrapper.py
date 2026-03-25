@@ -74,25 +74,82 @@ def downscale_image_for_processing(image_path: Path, output_dir: Path, max_size:
     # Save resized image to a temp file next to the original
     resized_path = output_dir / f"_resized{image_path.suffix or '.png'}"
     cv2.imwrite(str(resized_path), resized)
-    print(f"  Downscaled image: {w}x{h} → {new_w}x{new_h} (scale={scale:.3f})")
+    print(f"  Downscaled image: {w}x{h} -> {new_w}x{new_h} (scale={scale:.3f})")
     return resized_path, scale
 
 
+def compute_adaptive_thresholds(image_path: Path) -> dict:
+    """Compute adaptive Canny thresholds based on Otsu's method and image Laplacian variance."""
+    img = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        return {"th_low": 3, "th_high": 15, "sigma": 3}
+    otsu_thresh, _ = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    th_high = max(5, min(30, otsu_thresh * 0.15))
+    th_low = max(2, th_high * 0.3)
+    
+    var = cv2.Laplacian(img, cv2.CV_64F).var()
+    sigma = 4.0 if var > 500 else 3.0 if var > 100 else 2.0
+    return {"th_low": int(round(th_low)), "th_high": int(round(th_high)), "sigma": int(round(sigma))}
 
-def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False):
+def apply_clahe_preprocessing(image_path: Path, output_path: Path) -> Path:
+    """Apply CLAHE contrast enhancement and bilateral denoising as a fallback."""
+    img = cv2.imread(str(image_path))
+    if img is None: return image_path
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    l = clahe.apply(l)
+    lab = cv2.merge([l, a, b])
+    img = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    img = cv2.bilateralFilter(img, 9, 75, 75)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    mean_b = np.mean(gray)
+    if mean_b < 100:
+        factor = 120 / mean_b if mean_b > 0 else 1.0
+        img = cv2.convertScaleAbs(img, alpha=min(factor, 1.8), beta=0)
+    cv2.imwrite(str(output_path), img, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    return output_path
+
+def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False, params=None, mode='adaptive'):
     """
-    Run CS-TRD with optimized parameters.
-    Key improvements:
-    - Downscale large images before processing to speed up detection
-    - Pass actual image dimensions (hsize/wsize) to prevent internal resizing
-    - Use optimized thresholds (th_low=3, th_high=15)
-    - Upscale detected ring coordinates back to original resolution
+    Run CS-TRD with configurable parameters and operating modes.
+    Modes:
+      'baseline'       : Fixed defaults
+      'adaptive'       : Automatically calculates Otsu thresholds
+      'adaptive_clahe' : Preprocesses image with CLAHE and then uses adaptive thresholds
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Use override params or defaults
+    p = {
+        "sigma": 3,
+        "th_low": 3,
+        "th_high": 15,
+        "alpha": 30,
+        "nr": 360,
+        "min_chain_length": 2,
+    }
+    if params:
+        p.update({k: v for k, v in params.items() if v is not None})
+
     # Downscale large images for faster processing
     proc_path, scale = downscale_image_for_processing(image_path, output_dir)
+    
+    # ----------------------------------------------------
+    # MODE LOGIC (Baseline, Adaptive, Adaptive + CLAHE)
+    # ----------------------------------------------------
+    if mode == 'adaptive_clahe':
+        clahe_path = output_dir / f"_clahe{Path(proc_path).suffix}"
+        proc_path = apply_clahe_preprocessing(proc_path, clahe_path)
+        
+    if mode in ['adaptive', 'adaptive_clahe']:
+        adapt_params = compute_adaptive_thresholds(proc_path)
+        p.update(adapt_params)
+        print(f"  [MODE: {mode}] Adaptive params used -> th_low: {p['th_low']}, th_high: {p['th_high']}, sigma: {p['sigma']}")
+    else:
+        print(f"  [MODE: {mode}] Using baseline/fixed params.")
+
     scaled_cx = int(round(cx * scale))
     scaled_cy = int(round(cy * scale))
 
@@ -102,7 +159,7 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False):
         print(f"  ERROR: Could not read image: {proc_path}")
         return None
 
-    # Build command with optimized parameters
+    # Build command with parameters
     cmd = [
         sys.executable,
         str(CSTRD_ROOT / "main.py"),
@@ -113,12 +170,12 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False):
         "--root", str(CSTRD_ROOT),
         "--hsize", str(img_h),
         "--wsize", str(img_w),
-        "--th_low", "3",
-        "--th_high", "15",
-        "--sigma", "3",
-        "--alpha", "30",
-        "--nr", "360",
-        "--min_chain_length", "2",
+        "--th_low", str(p["th_low"]),
+        "--th_high", str(p["th_high"]),
+        "--sigma", str(p["sigma"]),
+        "--alpha", str(p["alpha"]),
+        "--nr", str(p["nr"]),
+        "--min_chain_length", str(p["min_chain_length"]),
     ]
 
     if save_imgs:
@@ -127,9 +184,19 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False):
     print(f"  Running CS-TRD (optimized: {img_w}x{img_h}, th=3/15)...")
     result = subprocess.run(cmd, cwd=str(CSTRD_ROOT), capture_output=True, text=True)
 
-    if result.returncode != 0 and result.stderr:
-        # Fallback with default parameters
-        print(f"  Optimized params failed, trying default...")
+    if result.stderr:
+        print(f"  CS-TRD stderr: {result.stderr[:500]}")
+
+    json_path = output_dir / "labelme.json"
+    has_shapes = False
+    if json_path.exists():
+        with open(json_path) as f:
+            data = json.load(f)
+        has_shapes = len(data.get('shapes', [])) > 0
+
+    if (result.returncode != 0 or not has_shapes):
+        # Fallback 1: default parameters
+        print(f"  Optimized params {'failed' if result.returncode != 0 else 'found 0 rings'}, trying default...")
         cmd_default = [
             sys.executable,
             str(CSTRD_ROOT / "main.py"),
@@ -141,7 +208,50 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False):
         ]
         if save_imgs:
             cmd_default.extend(["--save_imgs", "1"])
-        subprocess.run(cmd_default, cwd=str(CSTRD_ROOT), capture_output=True, text=True)
+        result2 = subprocess.run(cmd_default, cwd=str(CSTRD_ROOT), capture_output=True, text=True)
+        if result2.stderr:
+            print(f"  CS-TRD default stderr: {result2.stderr[:500]}")
+
+        # Check again
+        if json_path.exists():
+            with open(json_path) as f:
+                data = json.load(f)
+            has_shapes = len(data.get('shapes', [])) > 0
+
+    if not has_shapes:
+        # Fallback 2: relaxed thresholds for challenging images
+        print(f"  Default params also found 0 rings, trying relaxed thresholds (th=2/10)...")
+        try:
+            cmd_relaxed = [
+                sys.executable,
+                str(CSTRD_ROOT / "main.py"),
+                "--input", str(proc_path),
+                "--cx", str(scaled_cx),
+                "--cy", str(scaled_cy),
+                "--output_dir", str(output_dir),
+                "--root", str(CSTRD_ROOT),
+                "--hsize", str(img_h),
+                "--wsize", str(img_w),
+                "--th_low", "2",
+                "--th_high", "10",
+                "--sigma", "4",
+                "--nr", "360",
+            ]
+            if save_imgs:
+                cmd_relaxed.extend(["--save_imgs", "1"])
+            result3 = subprocess.run(cmd_relaxed, cwd=str(CSTRD_ROOT), capture_output=True, text=True)
+            if result3.stderr:
+                print(f"  CS-TRD relaxed stderr: {result3.stderr[:500]}")
+
+            # Re-read json after relaxed run
+            if json_path.exists():
+                with open(json_path) as f:
+                    data = json.load(f)
+                has_shapes = len(data.get('shapes', [])) > 0
+                if has_shapes:
+                    print(f"  Relaxed params found {len(data.get('shapes', []))} rings!")
+        except Exception as e:
+            print(f"  CS-TRD relaxed fallback error: {e}")
 
     # Clean up temp resized file
     if proc_path != Path(image_path) and proc_path.exists():
@@ -150,7 +260,6 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False):
         except Exception:
             pass
 
-    json_path = output_dir / "labelme.json"
     if json_path.exists():
         with open(json_path) as f:
             data = json.load(f)

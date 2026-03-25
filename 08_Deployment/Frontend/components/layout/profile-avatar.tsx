@@ -89,17 +89,7 @@ export function ProfileAvatar() {
             </button>
           </div>
 
-          {/* Plan badge */}
-          <div className="border-t-2 border-[#333333] px-4 py-2.5">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] text-[#555555]">
-                PLAN: <span className="text-[#a3a3a3] uppercase">{user.plan}</span>
-              </span>
-              <button className="font-mono text-[10px] text-[#ea580c] hover:text-[#f97316] transition-none uppercase">
-                UPGRADE ▸
-              </button>
-            </div>
-          </div>
+
         </div>
       )}
     </div>

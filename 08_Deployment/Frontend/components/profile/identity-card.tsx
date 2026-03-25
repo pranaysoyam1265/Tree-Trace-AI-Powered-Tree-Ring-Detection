@@ -221,16 +221,9 @@ export function IdentityCard() {
       {
         !editing && (
           <div className="rounded-md border border-[var(--color-border-subtle)] bg-[var(--bg-void)]/30 p-3 mb-4">
-            <div className="flex justify-between items-center mb-2 pb-2 border-b border-[var(--color-border-subtle)]">
+            <div className="flex justify-between items-center">
               <span className="font-mono text-xs text-muted-foreground/60 uppercase">Member Since</span>
               <span className="font-mono text-xs text-muted-foreground">{memberDateStr} <span className="text-muted-foreground/60">({memberDays}d)</span></span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-mono text-xs text-muted-foreground/60 uppercase">Plan</span>
-              <span className="font-mono text-xs text-accent uppercase flex items-center gap-2">
-                {user.plan}
-                {user.plan === "free" && <button className="text-[11px] text-[var(--color-accent-dark)] hover:text-accent transition-colors">Upgrade →</button>}
-              </span>
             </div>
           </div>
         )

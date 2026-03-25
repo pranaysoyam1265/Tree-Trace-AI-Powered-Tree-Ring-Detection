@@ -79,18 +79,18 @@ export function HeroSection() {
             <div className="flex flex-col items-start gap-6">
               <div className="flex flex-col items-start gap-4">
                 {/* System status badge */}
-                <div className="inline-flex items-center gap-2 border border-[#333333] bg-[#141414] px-3 py-1 font-mono text-[10px] text-[#a3a3a3] uppercase tracking-[0.25em]">
-                  <span className="inline-block w-2 h-2 bg-[#ea580c] animate-blink" />
+                <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 backdrop-blur-md rounded-full px-3 py-1 font-mono text-[10px] text-[#a3a3a3] uppercase tracking-[0.25em]">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#ea580c] animate-blink shadow-[0_0_8px_#ea580c]" />
                   <span>DENDROCHRONOLOGY ANALYSIS TERMINAL</span>
                 </div>
 
                 {/* Headline with ASCII animation behind it */}
                 <div className="relative mt-1">
                   <div
-                    className="pointer-events-none absolute -inset-4 flex items-center justify-center overflow-hidden opacity-[0.04]"
+                    className="pointer-events-none absolute -inset-4 flex items-center justify-center overflow-hidden opacity-[0.15]"
                     aria-hidden="true"
                   >
-                    <pre className="font-mono text-[10px] leading-[14px] text-white lg:text-xs lg:leading-[16px] whitespace-pre">
+                    <pre className="font-mono text-[10px] leading-[14px] text-[#ea580c] lg:text-xs lg:leading-[16px] whitespace-pre">
                       {asciiFrame}
                     </pre>
                   </div>
@@ -127,16 +127,16 @@ export function HeroSection() {
                       reset()
                       router.push("/analyze")
                     }}
-                    className="flex items-center justify-center gap-2 bg-[#ea580c] text-white min-w-[220px] px-8 py-2.5 font-mono text-sm font-bold uppercase tracking-[0.2em] border-2 border-[#ea580c] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:bg-transparent hover:text-[#ea580c] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-none w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 bg-[#ea580c] text-white min-w-[220px] px-8 py-3 font-mono text-sm font-bold uppercase tracking-[0.15em] rounded-md shadow-lg shadow-[#ea580c]/20 hover:bg-[#c24a0a] hover:shadow-[#ea580c]/40 hover:-translate-y-0.5 active:translate-y-0.5 transition-all w-full sm:w-auto"
                   >
-                    [▸ INITIATE ANALYSIS]
+                    ▸ INITIATE ANALYSIS
                   </button>
                   {/* Secondary CTA */}
                   <a
                     href="/docs"
-                    className="flex items-center justify-center gap-2 bg-transparent text-[#a3a3a3] min-w-[220px] px-8 py-2.5 font-mono text-sm uppercase tracking-[0.15em] border border-[#333333] hover:border-[#ea580c] hover:text-[#ea580c] transition-colors w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 bg-[#1a1a1a] text-[#a3a3a3] min-w-[220px] px-8 py-3 font-mono text-sm uppercase tracking-[0.15em] border border-white/5 rounded-md hover:border-white/20 hover:text-white hover:bg-[#222] transition-all w-full sm:w-auto"
                   >
-                    [EXPLORE FEATURES]
+                    EXPLORE FEATURES
                   </a>
                 </div>
 
@@ -160,26 +160,25 @@ export function HeroSection() {
               {/* Subtle static glow underlay */}
               <div className="absolute inset-0 bg-[#ea580c]/[0.03] blur-[80px] rounded-full pointer-events-none" />
 
-              {/* Terminal-style casing */}
-              <div className="relative w-full border-2 border-[#333333] bg-[#141414] shadow-[0_0_60px_-20px_rgba(234,88,12,0.12)]">
-                <CornerAccents />
+              {/* Sleek Demo Window Casing */}
+              <div className="relative w-full rounded-xl border border-white/10 bg-[#141414] shadow-[0_0_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden">
 
-                {/* Terminal title bar */}
-                <div className="h-7 border-b border-[#333333] bg-[#0d0d0d] flex items-center px-3 justify-between select-none">
+                {/* Modern Window Title Bar */}
+                <div className="h-9 border-b border-white/5 bg-[#1a1a1a] flex items-center px-4 justify-between select-none">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-[#ea580c]" />
-                    <div className="w-2 h-2 bg-[#333333]" />
-                    <div className="w-2 h-2 bg-[#333333]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
                   </div>
-                  <span className="font-mono text-[9px] text-[#555555] uppercase tracking-[0.2em]">
-                    ── LIVE_PREVIEW ──
+                  <span className="font-[family-name:var(--font-mono)] text-[11px] font-medium text-white/40 tracking-wide">
+                    Live Demo
                   </span>
-                  <div className="w-12" />
+                  <div className="w-10" />
                 </div>
 
                 {/* Inner Screen Bezel */}
-                <div className="relative bg-[#0a0a0a] border-t border-[#1f1f1f] w-full" style={{ height: '400px', overflow: 'hidden' }}>
-                  <div className="w-full h-full relative">
+                <div className="relative bg-[#0a0a0a] w-full" style={{ height: '400px', overflow: 'hidden' }}>
+                  <div className="w-full h-full relative flex items-center justify-center">
                     <TreeTraceDemoPlayer />
                   </div>
                 </div>

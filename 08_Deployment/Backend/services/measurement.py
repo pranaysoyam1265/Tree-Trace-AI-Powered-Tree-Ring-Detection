@@ -29,7 +29,7 @@ def calculate_ring_measurements(shapes: list, cx: int, cy: int, birth_year: int)
             'width_px': round(w['width_px'], 2),
             'estimated_year': estimated_year,
             'eccentricity': round(w.get('eccentricity', 0), 4),
-            'points': rd['points'].tolist()  # numpy array → list for JSON
+            'points': rd['points'].tolist()  # numpy array -> list for JSON
         })
 
     return rings, widths

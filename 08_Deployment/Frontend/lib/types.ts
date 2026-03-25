@@ -114,6 +114,13 @@ export interface AnalysisResult {
   biography: string
   carbon: CarbonData
 
+  preprocessing?: {
+    log: string[]
+    params_used: Record<string, any>
+    preset: string
+    mode?: string
+  }
+
   metrics: MetricsData
 
   overlay_image_base64: string | null

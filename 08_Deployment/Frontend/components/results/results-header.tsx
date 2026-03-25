@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Share2, Clock, Check } from "lucide-react"
+import { ArrowLeft, Share2, Clock, Check, GitCompare } from "lucide-react"
 import type { AnalysisResult } from "@/lib/types"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
@@ -15,7 +15,7 @@ interface Props {
 export function ResultsHeader({ result }: Props) {
   const [copied, setCopied] = useState(false)
   const router = useRouter()
-  const { reset } = useAnalysis()
+  const { reset, setStep } = useAnalysis()
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href)
@@ -47,6 +47,19 @@ export function ResultsHeader({ result }: Props) {
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           [NEW ANALYSIS]
+        </button>
+
+        {/* Compare Mode button — goes back to config without resetting file/pith */}
+        <button
+          onClick={() => {
+            setStep(1)
+            router.push("/analyze")
+          }}
+          className="group flex items-center gap-1.5 border border-border bg-surface px-3 py-2 font-mono text-xs uppercase tracking-[1px] text-muted-foreground transition-colors hover:border-[#ea580c] hover:text-[#ea580c]"
+          title="Re-run with a different detection mode on the same image"
+        >
+          <GitCompare className="h-3.5 w-3.5" />
+          [COMPARE MODE]
         </button>
 
         <div className="h-5 w-px bg-border hidden sm:block" />

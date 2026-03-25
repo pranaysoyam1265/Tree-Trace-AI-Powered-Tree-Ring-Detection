@@ -1,36 +1,112 @@
 "use client"
 
 import React, { useState, useCallback } from "react"
-import { SettingSlider } from "../controls/setting-slider"
-import { SettingInput } from "../controls/setting-input"
+import { useAnalysis, type DetectionParams } from "@/lib/contexts/analysis-context"
 
-const DEFAULTS = {
-  sensitivity: 0.75,
-  minRingWidth: 3,
-  edgeSigma: 1.5,
-  numRays: 360,
+const DEFAULTS: DetectionParams = {
+  sigma: undefined,
+  th_low: undefined,
+  th_high: undefined,
+  nr: undefined,
+  alpha: undefined,
+  min_chain_length: undefined,
+  preset: "auto",
 }
 
-export function DetectionParams({ searchQuery }: { searchQuery: string }) {
-  const [sensitivity, setSensitivity] = useState(DEFAULTS.sensitivity)
-  const [minRingWidth, setMinRingWidth] = useState(DEFAULTS.minRingWidth)
-  const [edgeSigma, setEdgeSigma] = useState(DEFAULTS.edgeSigma)
-  const [numRays, setNumRays] = useState(DEFAULTS.numRays)
+const PRESETS: Record<string, { label: string; desc: string; params: Partial<DetectionParams> }> = {
+  auto: {
+    label: "AUTO",
+    desc: "Adaptive thresholds computed from image histogram.",
+    params: { sigma: undefined, th_low: undefined, th_high: undefined, nr: undefined, alpha: undefined, min_chain_length: undefined },
+  },
+  softwood: {
+    label: "SOFTWOOD",
+    desc: "Pine, Spruce, Fir — wide, clear rings with high contrast.",
+    params: { sigma: 3.0, th_low: 3, th_high: 15, alpha: 30, nr: 360, min_chain_length: 2 },
+  },
+  hardwood: {
+    label: "HARDWOOD",
+    desc: "Oak, Birch, Maple — narrow, dense rings with lower contrast.",
+    params: { sigma: 4.0, th_low: 2, th_high: 10, alpha: 20, nr: 360, min_chain_length: 1 },
+  },
+}
+
+export function DetectionParamsSection({ searchQuery }: { searchQuery: string }) {
+  const { state, setDetectionParams } = useAnalysis()
+  const dp = state.detectionParams
+
+  const [localSigma, setLocalSigma] = useState(dp.sigma ?? 3.0)
+  const [localThLow, setLocalThLow] = useState(dp.th_low ?? 3)
+  const [localThHigh, setLocalThHigh] = useState(dp.th_high ?? 15)
+  const [localNr, setLocalNr] = useState(dp.nr ?? 360)
+  const [localAlpha, setLocalAlpha] = useState(dp.alpha ?? 30)
+  const [localMinChain, setLocalMinChain] = useState(dp.min_chain_length ?? 2)
+  const [localPreset, setLocalPreset] = useState(dp.preset ?? "auto")
 
   const matches = (text: string) =>
     !searchQuery || text.toLowerCase().includes(searchQuery.toLowerCase())
 
   const visible = matches("detection") || matches("sensitivity") ||
-    matches("ring width") || matches("edge") || matches("sigma") || matches("rays") || matches("cs-trd")
+    matches("ring width") || matches("edge") || matches("sigma") || matches("rays") || matches("cs-trd") || matches("preset") || matches("species")
 
   if (!visible) return null
 
+  const isAuto = localPreset === "auto"
+
+  const applyParams = useCallback(() => {
+    const params: DetectionParams = {
+      preset: localPreset,
+    }
+    // Only send specific params if not in auto mode
+    if (!isAuto) {
+      params.sigma = localSigma
+      params.th_low = localThLow
+      params.th_high = localThHigh
+      params.nr = localNr
+      params.alpha = localAlpha
+      params.min_chain_length = localMinChain
+    }
+    setDetectionParams(params)
+  }, [localPreset, localSigma, localThLow, localThHigh, localNr, localAlpha, localMinChain, isAuto, setDetectionParams])
+
+  const selectPreset = useCallback((key: string) => {
+    setLocalPreset(key)
+    const p = PRESETS[key]?.params
+    if (p) {
+      if (p.sigma != null) setLocalSigma(p.sigma)
+      if (p.th_low != null) setLocalThLow(p.th_low)
+      if (p.th_high != null) setLocalThHigh(p.th_high)
+      if (p.nr != null) setLocalNr(p.nr)
+      if (p.alpha != null) setLocalAlpha(p.alpha)
+      if (p.min_chain_length != null) setLocalMinChain(p.min_chain_length)
+    }
+    // Auto-apply on preset change
+    const params: DetectionParams = { preset: key }
+    if (key !== "auto" && p) {
+      Object.assign(params, p)
+    }
+    setDetectionParams(params)
+  }, [setDetectionParams])
+
   const resetDefaults = () => {
-    setSensitivity(DEFAULTS.sensitivity)
-    setMinRingWidth(DEFAULTS.minRingWidth)
-    setEdgeSigma(DEFAULTS.edgeSigma)
-    setNumRays(DEFAULTS.numRays)
+    selectPreset("auto")
   }
+
+  const sliderClass = `w-full h-2 appearance-none bg-[#333333] border border-[#333333] cursor-pointer
+    [&::-webkit-slider-thumb]:appearance-none
+    [&::-webkit-slider-thumb]:w-4
+    [&::-webkit-slider-thumb]:h-4
+    [&::-webkit-slider-thumb]:bg-[#ea580c]
+    [&::-webkit-slider-thumb]:border-2
+    [&::-webkit-slider-thumb]:border-[#ea580c]
+    [&::-webkit-slider-thumb]:cursor-pointer
+    [&::-moz-range-thumb]:w-4
+    [&::-moz-range-thumb]:h-4
+    [&::-moz-range-thumb]:bg-[#ea580c]
+    [&::-moz-range-thumb]:border-2
+    [&::-moz-range-thumb]:border-[#ea580c]
+    [&::-moz-range-thumb]:cursor-pointer
+    [&::-moz-range-thumb]:rounded-none`
 
   return (
     <div className="flex flex-col gap-6 mt-6">
@@ -42,121 +118,154 @@ export function DetectionParams({ searchQuery }: { searchQuery: string }) {
         <div className="h-px bg-[#333333]" />
       </div>
 
-      {/* CS-TRD Sensitivity */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
-            CS-TRD SENSITIVITY
-          </span>
-          <span className="font-mono text-sm font-bold text-white tabular-nums">
-            {sensitivity.toFixed(2)}
-          </span>
-        </div>
-        <input
-          type="range"
-          min="0.1"
-          max="1.0"
-          step="0.05"
-          value={sensitivity}
-          onChange={(e) => setSensitivity(parseFloat(e.target.value))}
-          className="w-full h-2 appearance-none bg-[#333333] border border-[#333333] cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-4
-            [&::-webkit-slider-thumb]:h-4
-            [&::-webkit-slider-thumb]:bg-[#ea580c]
-            [&::-webkit-slider-thumb]:border-2
-            [&::-webkit-slider-thumb]:border-[#ea580c]
-            [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:w-4
-            [&::-moz-range-thumb]:h-4
-            [&::-moz-range-thumb]:bg-[#ea580c]
-            [&::-moz-range-thumb]:border-2
-            [&::-moz-range-thumb]:border-[#ea580c]
-            [&::-moz-range-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:rounded-none
-          "
-        />
-        <p className="font-mono text-[10px] text-[#555555] leading-relaxed">
-          Higher = more rings detected but more false positives.
-          Lower = fewer rings but higher precision.
-        </p>
-      </div>
-
-      {/* Min Ring Width */}
+      {/* Species Preset Selector */}
       <div className="flex flex-col gap-2">
         <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
-          MIN RING WIDTH (PX)
+          SPECIES PRESET
         </span>
-        <input
-          type="number"
-          min="1"
-          max="50"
-          value={minRingWidth}
-          onChange={(e) => setMinRingWidth(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-          className="w-32 border-2 border-[#333333] bg-[#0a0a0a] px-3 py-2 font-mono text-sm text-white focus:border-[#ea580c] focus:outline-none tabular-nums"
-        />
-        <p className="font-mono text-[10px] text-[#555555] leading-relaxed">
-          Ignore detected rings thinner than this value.
-        </p>
-      </div>
-
-      {/* Edge Detection Sigma */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
-            EDGE DETECTION SIGMA
-          </span>
-          <span className="font-mono text-sm font-bold text-white tabular-nums">
-            {edgeSigma.toFixed(1)}
-          </span>
+        <div className="grid grid-cols-3 gap-2">
+          {Object.entries(PRESETS).map(([key, { label }]) => (
+            <button
+              key={key}
+              onClick={() => selectPreset(key)}
+              className={`border-2 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] font-bold transition-none ${localPreset === key
+                ? "border-[#ea580c] bg-[#ea580c]/10 text-[#ea580c]"
+                : "border-[#333333] text-[#a3a3a3] hover:text-[#ea580c] hover:border-[#ea580c]"
+                }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        <input
-          type="range"
-          min="0.5"
-          max="5.0"
-          step="0.1"
-          value={edgeSigma}
-          onChange={(e) => setEdgeSigma(parseFloat(e.target.value))}
-          className="w-full h-2 appearance-none bg-[#333333] border border-[#333333] cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-4
-            [&::-webkit-slider-thumb]:h-4
-            [&::-webkit-slider-thumb]:bg-[#ea580c]
-            [&::-webkit-slider-thumb]:border-2
-            [&::-webkit-slider-thumb]:border-[#ea580c]
-            [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:w-4
-            [&::-moz-range-thumb]:h-4
-            [&::-moz-range-thumb]:bg-[#ea580c]
-            [&::-moz-range-thumb]:border-2
-            [&::-moz-range-thumb]:border-[#ea580c]
-            [&::-moz-range-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:rounded-none
-          "
-        />
         <p className="font-mono text-[10px] text-[#555555] leading-relaxed">
-          Controls Gaussian smoothing for edge detection.
-          Higher = smoother, fewer noise detections.
+          {PRESETS[localPreset]?.desc || ""}
         </p>
       </div>
 
-      {/* Number of Rays */}
-      <div className="flex flex-col gap-2">
-        <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
-          NR (NUMBER OF RAYS)
+      {/* Manual overrides — shown when NOT auto */}
+      {!isAuto && (
+        <>
+          {/* Edge Detection Sigma */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+                EDGE DETECTION SIGMA
+              </span>
+              <span className="font-mono text-sm font-bold text-white tabular-nums">
+                {localSigma.toFixed(1)}
+              </span>
+            </div>
+            <input
+              type="range" min="0.5" max="5.0" step="0.1"
+              value={localSigma}
+              onChange={(e) => setLocalSigma(parseFloat(e.target.value))}
+              className={sliderClass}
+            />
+            <p className="font-mono text-[10px] text-[#555555] leading-relaxed">
+              Gaussian smoothing. Higher = smoother, fewer noise detections.
+            </p>
+          </div>
+
+          {/* Threshold Low */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+                THRESHOLD LOW
+              </span>
+              <span className="font-mono text-sm font-bold text-white tabular-nums">
+                {localThLow.toFixed(1)}
+              </span>
+            </div>
+            <input
+              type="range" min="1" max="10" step="0.5"
+              value={localThLow}
+              onChange={(e) => setLocalThLow(parseFloat(e.target.value))}
+              className={sliderClass}
+            />
+          </div>
+
+          {/* Threshold High */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+                THRESHOLD HIGH
+              </span>
+              <span className="font-mono text-sm font-bold text-white tabular-nums">
+                {localThHigh.toFixed(1)}
+              </span>
+            </div>
+            <input
+              type="range" min="5" max="30" step="1"
+              value={localThHigh}
+              onChange={(e) => setLocalThHigh(parseFloat(e.target.value))}
+              className={sliderClass}
+            />
+          </div>
+
+          {/* Number of Rays */}
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+              NR (NUMBER OF RAYS)
+            </span>
+            <input
+              type="number" min="36" max="720"
+              value={localNr}
+              onChange={(e) => setLocalNr(Math.max(36, Math.min(720, parseInt(e.target.value) || 36)))}
+              className="w-32 border-2 border-[#333333] bg-[#0a0a0a] px-3 py-2 font-mono text-sm text-white focus:border-[#ea580c] focus:outline-none tabular-nums"
+            />
+          </div>
+
+          {/* Alpha */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+                ALPHA (ANGULAR TOLERANCE)
+              </span>
+              <span className="font-mono text-sm font-bold text-white tabular-nums">
+                {localAlpha}
+              </span>
+            </div>
+            <input
+              type="range" min="10" max="60" step="5"
+              value={localAlpha}
+              onChange={(e) => setLocalAlpha(parseInt(e.target.value))}
+              className={sliderClass}
+            />
+          </div>
+
+          {/* Min Chain Length */}
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+              MIN CHAIN LENGTH
+            </span>
+            <input
+              type="number" min="1" max="10"
+              value={localMinChain}
+              onChange={(e) => setLocalMinChain(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+              className="w-32 border-2 border-[#333333] bg-[#0a0a0a] px-3 py-2 font-mono text-sm text-white focus:border-[#ea580c] focus:outline-none tabular-nums"
+            />
+            <p className="font-mono text-[10px] text-[#555555] leading-relaxed">
+              Minimum number of connected edge segments to form a ring.
+            </p>
+          </div>
+
+          {/* Apply button for manual overrides */}
+          <button
+            onClick={applyParams}
+            className="w-fit border-2 border-[#ea580c] bg-[#ea580c]/10 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-[#ea580c] font-bold hover:bg-[#ea580c] hover:text-white transition-none"
+          >
+            [▸ APPLY PARAMETERS]
+          </button>
+        </>
+      )}
+
+      {/* Active params indicator */}
+      <div className="border-2 border-[#333333] bg-[#0d0d0d] px-4 py-3">
+        <span className="font-mono text-[10px] text-[#555555] uppercase tracking-[0.15em]">
+          Active: {dp.preset?.toUpperCase() || "AUTO"} preset
+          {dp.sigma != null && ` • σ=${dp.sigma}`}
+          {dp.th_low != null && dp.th_high != null && ` • th=${dp.th_low}/${dp.th_high}`}
         </span>
-        <input
-          type="number"
-          min="36"
-          max="720"
-          value={numRays}
-          onChange={(e) => setNumRays(Math.max(36, Math.min(720, parseInt(e.target.value) || 36)))}
-          className="w-32 border-2 border-[#333333] bg-[#0a0a0a] px-3 py-2 font-mono text-sm text-white focus:border-[#ea580c] focus:outline-none tabular-nums"
-        />
-        <p className="font-mono text-[10px] text-[#555555] leading-relaxed">
-          Number of radial rays used for ring detection.
-          Higher = more precise boundaries, slower processing.
-        </p>
       </div>
 
       {/* Reset Button */}
@@ -164,7 +273,7 @@ export function DetectionParams({ searchQuery }: { searchQuery: string }) {
         onClick={resetDefaults}
         className="w-fit border-2 border-[#333333] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-[#a3a3a3] hover:text-[#ea580c] hover:border-[#ea580c] transition-none"
       >
-        [▸ RESET DETECTION PARAMS TO DEFAULT]
+        [▸ RESET TO AUTO]
       </button>
     </div>
   )

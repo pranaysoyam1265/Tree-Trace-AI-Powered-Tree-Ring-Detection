@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { useAnalysis } from "@/lib/contexts/analysis-context"
 import { apiClient } from "@/lib/api-client"
 import { cacheResult } from "@/lib/result-storage"
-import { XCircle } from "lucide-react"
+import { XCircle, RotateCcw } from "lucide-react"
 import { RingDetectionVisualizer } from "@/components/RingDetectionVisualizer"
 
 
@@ -16,7 +16,7 @@ import { RingDetectionVisualizer } from "@/components/RingDetectionVisualizer"
    ═══════════════════════════════════════════════════════════════════ */
 
 export function ProcessingStep() {
-  const { state, updateProcess, setResult, setStep } = useAnalysis()
+  const { state, updateProcess, setResult, setStep, goBack } = useAnalysis()
   const router = useRouter()
   const cancelledRef = useRef(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -25,6 +25,26 @@ export function ProcessingStep() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [logLines, setLogLines] = useState<{ text: string; type: "info" | "ok" | "dim" | "err" }[]>([])
   const logEndRef = useRef<HTMLDivElement>(null)
+  const [explanationIdx, setExplanationIdx] = useState(0)
+
+  const EXPLANATION_STEPS = [
+    "Extracting visual ridges from the specimen surface...",
+    "Mapping radial gradients from the marked pith...",
+    "Equalizing histogram contrast in local regions...",
+    "Applying Shortest Path algorithm to trace boundaries...",
+    "Pruning false-positive sequential chains...",
+    "Measuring chronological inter-ring pixel distances...",
+    "Verifying unbroken continuous annual rings...",
+    "Calculating growth health metrics and F1 confidence...",
+  ]
+
+  useEffect(() => {
+    if (state.processStatus !== "running") return
+    const id = setInterval(() => {
+      setExplanationIdx((prev) => (prev + 1) % EXPLANATION_STEPS.length)
+    }, 3500)
+    return () => clearInterval(id)
+  }, [state.processStatus])
 
   useEffect(() => {
     const start = Date.now()
@@ -52,7 +72,7 @@ export function ProcessingStep() {
       addLog("[INIT] Uploading image to analysis server...", "dim")
       addLog("")
 
-      if (!state.file || !state.pith) {
+      if (!state.file || (state.pithMethod === "manual" && !state.pith)) {
         addLog("[ERROR] Missing image or pith coordinates.", "err")
         updateProcess("error", "Missing image or pith coordinates.")
         return
@@ -65,16 +85,43 @@ export function ProcessingStep() {
         const formData = new FormData()
         formData.append("image", state.file)
         formData.append("image_name", state.file.name)
-        formData.append("cx", String(Math.round(state.pith.x)))
-        formData.append("cy", String(Math.round(state.pith.y)))
+
+        // Pith: only send if manual mode
+        if (state.pithMethod === "manual" && state.pith) {
+          formData.append("cx", String(Math.round(state.pith.x)))
+          formData.append("cy", String(Math.round(state.pith.y)))
+        }
+        // If auto mode, cx/cy are omitted — backend will auto-detect
+
         formData.append("sampling_year", String(new Date().getFullYear()))
 
-        addLog(`[UPLOAD] Image: ${state.file.name} (${(state.file.size / 1024 / 1024).toFixed(1)} MB)`)
-        addLog(`[UPLOAD] Pith: cx=${Math.round(state.pith.x)}, cy=${Math.round(state.pith.y)}`)
-        addLog("")
-        updateProcess("running", "Detecting rings... (this takes 10-30 seconds)")
+        // Detection parameters from settings
+        const dp = state.detectionParams
+        if (dp.sigma != null) formData.append("sigma", String(dp.sigma))
+        if (dp.th_low != null) formData.append("th_low", String(dp.th_low))
+        if (dp.th_high != null) formData.append("th_high", String(dp.th_high))
+        if (dp.nr != null) formData.append("nr", String(dp.nr))
+        if (dp.alpha != null) formData.append("alpha", String(dp.alpha))
+        if (dp.min_chain_length != null) formData.append("min_chain_length", String(dp.min_chain_length))
+        if (dp.preset) formData.append("preset", dp.preset)
+        formData.append("mode", state.detectionMode)
 
-        addLog("[  >>  ] Ring detection in progress...")
+        const pithLabel = state.pithMethod === "auto"
+          ? "Auto-detect"
+          : `cx=${Math.round(state.pith!.x)}, cy=${Math.round(state.pith!.y)}`
+
+        addLog(`[UPLOAD] Image: ${state.file.name} (${(state.file.size / 1024 / 1024).toFixed(1)} MB)`)
+        addLog(`[UPLOAD] Pith: ${pithLabel}`)
+        addLog(`[UPLOAD] Mode: ${state.detectionMode.toUpperCase()}`)
+        addLog("")
+
+        let modeStatus = "Running standard ring detection...";
+        if (state.detectionMode === "adaptive") modeStatus = "Running adaptive threshold-based ring detection...";
+        if (state.detectionMode === "adaptive_clahe") modeStatus = "Enhancing image and running adaptive ring detection...";
+
+        updateProcess("running", modeStatus)
+
+        addLog(`[  >>  ] ${modeStatus}`)
         addLog("[  >>  ] CS-TRD is analyzing your specimen.")
 
         const result = await apiClient.analyze(formData, abortController.signal)
@@ -204,7 +251,7 @@ export function ProcessingStep() {
 
             {/* Status bar below canvas */}
             <div className="flex items-center justify-between px-4 py-3 border-t border-[#222222] bg-[#0d0d0d]">
-              <div className="flex flex-col gap-1.5 flex-1">
+              <div className="flex flex-col gap-1.5 flex-1 overflow-hidden">
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-2xl font-bold text-[#ea580c] tabular-nums tracking-tight">
                     {formatTime(elapsed)}
@@ -213,21 +260,48 @@ export function ProcessingStep() {
                     ELAPSED
                   </span>
                 </div>
-                <motion.p
-                  key={state.processMessage}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="font-mono text-[10px] text-[#666666] uppercase tracking-[0.1em] truncate"
-                >
-                  {state.processMessage || "DETECTING RING BOUNDARIES..."}
-                </motion.p>
+
+                {state.processStatus === "running" ? (
+                  <motion.div
+                    key={`expl-${explanationIdx}`}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="font-mono text-[10px] text-[#a3a3a3] flex flex-col gap-0.5"
+                  >
+                    <span className="text-[#ea580c] font-bold uppercase tracking-widest text-[8px]">// ACTIVE PROCESS</span>
+                    <span className="truncate" title={EXPLANATION_STEPS[explanationIdx]}>{EXPLANATION_STEPS[explanationIdx]}</span>
+                  </motion.div>
+                ) : (
+                  <motion.p
+                    key={state.processMessage}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="font-mono text-[10px] text-[#666666] uppercase tracking-[0.1em] truncate"
+                  >
+                    {state.processMessage || "DETECTING RING BOUNDARIES..."}
+                  </motion.p>
+                )}
               </div>
 
-              {/* Cancel */}
+              {/* Cancel / Retry */}
               <AnimatePresence mode="wait">
-                {!showCancel ? (
+                {state.processStatus === "error" ? (
+                  <motion.button
+                    key="retry-btn"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={goBack}
+                    className="flex items-center gap-1.5 font-mono text-[10px] text-[#ea580c] hover:text-white uppercase tracking-[0.1em] px-3 py-1.5 border border-[#ea580c]/50 hover:border-[#ea580c] bg-[#ea580c]/10 transition-colors"
+                  >
+                    <RotateCcw className="h-3 w-3" /> [GO BACK / RETRY]
+                  </motion.button>
+                ) : !showCancel ? (
                   <motion.button
                     key="cancel-btn"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     onClick={() => setShowCancel(true)}
                     className="flex items-center gap-1.5 font-mono text-[10px] text-[#555555] hover:text-[#ef4444] uppercase tracking-[0.1em] px-3 py-1.5 border border-[#333333] hover:border-[#ef4444]/30 transition-colors"
                   >

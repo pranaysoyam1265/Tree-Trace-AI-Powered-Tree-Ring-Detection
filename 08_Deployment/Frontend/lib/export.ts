@@ -6,17 +6,19 @@
 import type { AnalysisResult } from "./types"
 
 export function exportCSV(result: AnalysisResult): void {
-  const header = "Ring #,Inner Radius (px),Outer Radius (px),Width (px),Est. Year\n"
+  const mode = result.preprocessing?.mode || "adaptive"
+  const header = `Image: ${result.image_name}, Mode: ${mode.toUpperCase()}\nRing #,Inner Radius (px),Outer Radius (px),Width (px),Est. Year\n`
   const rows = result.rings
     .map((r) => `${r.ring_number},${r.inner_radius_px.toFixed(1)},${r.outer_radius_px.toFixed(1)},${r.width_px.toFixed(1)},${r.estimated_year}`)
     .join("\n")
   const csv = header + rows
-  downloadBlob(csv, `treetrace-${result.id}.csv`, "text/csv")
+  downloadBlob(csv, `treetrace-${result.id}-${mode}.csv`, "text/csv")
 }
 
 export function exportJSON(result: AnalysisResult): void {
+  const mode = result.preprocessing?.mode || "adaptive"
   const json = JSON.stringify(result, null, 2)
-  downloadBlob(json, `treetrace-${result.id}.json`, "application/json")
+  downloadBlob(json, `treetrace-${result.id}-${mode}.json`, "application/json")
 }
 
 export function exportPNG(canvasElement: HTMLCanvasElement | null, filename: string): void {

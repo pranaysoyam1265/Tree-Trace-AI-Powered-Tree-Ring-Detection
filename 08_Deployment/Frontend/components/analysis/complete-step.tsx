@@ -3,11 +3,11 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAnalysis } from "@/lib/contexts/analysis-context"
-import { ArrowRight, RotateCcw, TreePine, Activity, Clock, Download, FileText, Ruler, CheckCircle2, Copy } from "lucide-react"
+import { ArrowRight, RotateCcw, TreePine, Activity, Clock, Download, FileText, Ruler, CheckCircle2, Copy, GitCompare } from "lucide-react"
 import { useAnalysisHistory } from "@/lib/hooks/use-analysis-history"
 
 export function CompleteStep() {
-  const { state, reset } = useAnalysis()
+  const { state, reset, setStep } = useAnalysis()
   const router = useRouter()
   const [countdown, setCountdown] = useState(5)
   const { saveSession } = useAnalysisHistory()
@@ -196,6 +196,18 @@ export function CompleteStep() {
         >
           <ArrowRight className="h-4 w-4" />
           View Detailed Results
+        </button>
+        <button
+          onClick={() => {
+            // Go back to pith/config step without resetting — user can switch mode and re-run
+            setStep(1)
+            router.push("/analyze")
+          }}
+          className="flex items-center justify-center gap-3 border-2 border-[#333333] px-6 py-4 font-mono text-sm font-bold text-[#a3a3a3] uppercase tracking-wider hover:border-[#ea580c] hover:text-[#ea580c] transition-none"
+          title="Same image + pith — switch mode and run again"
+        >
+          <GitCompare className="h-4 w-4" />
+          Try Another Mode
         </button>
         <button
           onClick={reset}
