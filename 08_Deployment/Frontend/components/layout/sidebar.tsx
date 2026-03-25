@@ -177,7 +177,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   </span>
                   <div className="flex flex-col gap-1">
                     {recent.map(a => (
-                      <a
+                      <Link
                         key={a.id}
                         href={`/results/${a.id}`}
                         onClick={() => setTimeout(onClose, 50)}
@@ -188,7 +188,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                           }`} />
                         <span className="flex-1 truncate uppercase">{a.imageName}</span>
                         <span className="text-[10px] text-[#555555] tabular-nums">{a.ringCount} RINGS</span>
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>

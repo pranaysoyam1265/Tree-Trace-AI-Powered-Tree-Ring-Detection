@@ -15,6 +15,7 @@ import { HealthScoreCard } from "@/components/results/health-score-card"
 import { AnomalyPanel } from "@/components/results/anomaly-panel"
 import { EcologyCard } from "@/components/results/ecology-card"
 import { SpecimenBiography } from "@/components/results/specimen-biography"
+import { ClimateCorrelation } from "@/components/results/climate-correlation"
 import { OverlayPngCard } from "@/components/results/overlay-png-card"
 import { getCachedResult, cacheResult } from "@/lib/result-storage"
 import { apiClient } from "@/lib/api-client"
@@ -241,6 +242,7 @@ export default function ResultsPage() {
             selectedRing={selectedRing}
             onSelectRing={setSelectedRing}
           />
+          <ClimateCorrelation result={result} />
           <SpecimenBiography result={result} />
           <ExportPanel result={result} />
         </main>

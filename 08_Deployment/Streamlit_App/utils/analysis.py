@@ -259,60 +259,39 @@ def generate_full_analysis(widths, current_year=None):
 
 
 def generate_biography(w_vals, birth_year, anomalies, phases, trend, health):
-    """Generate narrative tree biography."""
+    """Generate formal scientific abstract for the specimen."""
     n = len(w_vals)
+    if n == 0:
+        return "Insufficient data for abstract."
     mean_w = np.mean(w_vals)
 
     lines = []
-    lines.append(f"# 📖 The Life of This Tree")
-    lines.append(f"*Born approximately {birth_year} • Age: {n} years*")
+    
+    # Overview
+    lines.append(f"This specimen chronologically spans {n} years, with an estimated establishment year of {birth_year}. Over the observed period, the mean radial growth rate was {mean_w:.2f} pixels per year. The overall long-term growth trajectory exhibits a **{trend.lower()}** trend, indicating shifts in site conditions, canopy competition, or ontogenetic maturation.")
     lines.append("")
-
-    # Chapter 1: Birth
-    early_w = np.mean(w_vals[:min(5, n)])
-    if early_w > mean_w * 1.2:
-        start_desc = "I had a strong start, growing vigorously in my first years."
-    elif early_w < mean_w * 0.8:
-        start_desc = "My early years were challenging. I struggled to establish myself."
-    else:
-        start_desc = "I began my life quietly, growing at a steady pace."
-
-    lines.append(f"## 🌒 Chapter 1: The Beginning ({birth_year})")
-    lines.append(f"Around {birth_year}, a seed fell and I began to grow. {start_desc}")
-    lines.append(f"My growth averaged **{early_w:.1f} pixels** per year during this period.")
-    lines.append("")
-
-    # Chapter 2: Growth phases
+    
+    # Phases
     if phases:
-        for phase in phases:
-            lines.append(f"## {phase['name']} Phase ({phase['years']})")
-            lines.append(f"{phase['description']}. Average growth: **{phase['avg_width']} px/year**.")
-            lines.append("")
-
-    # Chapter 3: Notable events
-    if anomalies:
-        lines.append("## ⚡ Notable Events in My Life")
-        for a in anomalies[:5]:
-            lines.append(f"- **Year {a['year']}** (Ring {a['ring']}): "
-                         f"{a['emoji']} {a['label']} — {a['interpretation']} "
-                         f"(Width: {a['width']} px)")
-        lines.append("")
-
-    # Chapter 4: Current state
-    recent_w = np.mean(w_vals[-3:])
-    lines.append(f"## 🌳 Today ({birth_year + n})")
-    lines.append(f"At {n} years old, my recent growth averages **{recent_w:.1f} px/year**. ")
-    lines.append(f"My overall growth trend is **{trend}**. ")
-    lines.append(f"My health score is **{health['score']}/100** ({health['label']}).")
+         phase_desc = [f"the {p['name'].split()[-1].lower()} phase ({p['avg_width']} px/yr)" for p in phases]
+         lines.append(f"Ontogenetic development can be macroscopically partitioned into functional periods: {', '.join(phase_desc)}.")
+         lines.append("")
+        
+    # Health and anomalies
+    stress_count = sum(1 for a in anomalies if 'stress' in a['type'])
+    favorable_count = sum(1 for a in anomalies if 'exceptional' in a['type'] or 'favorable' in a['type'])
+    
+    if stress_count > 0:
+         stress_years = [str(a['year']) for a in anomalies if 'stress' in a['type']]
+         lines.append(f"The ring chronology exhibits marked variance driven by {stress_count} acute environmental stress episodes (putative drought, frost damage, or pathogenic events), most notably in the years: **{', '.join(stress_years[:8])}**.")
+    else:
+         lines.append("The specimen chronology is remarkably consistent, exhibiting minimal severe stress anomalies throughout its lifespan.")
+         
+    if favorable_count > 0:
+        lines.append(f"Conversely, {favorable_count} years demonstrated exceptional radial growth indicative of optimal climatic conditions or successful canopy release.")
+        
     lines.append("")
-
-    # Summary
-    lines.append("## 📊 My Life in Numbers")
-    lines.append(f"- 🎂 **Age:** {n} years")
-    lines.append(f"- 📏 **Total growth:** {sum(w_vals):.0f} pixels radius")
-    lines.append(f"- 📈 **Best year:** Ring {np.argmax(w_vals) + 1} ({w_vals.max():.1f} px)")
-    lines.append(f"- 📉 **Worst year:** Ring {np.argmin(w_vals) + 1} ({w_vals.min():.1f} px)")
-    lines.append(f"- ⚠️ **Stress events:** {sum(1 for a in anomalies if 'stress' in a['type'])}")
-    lines.append(f"- 🌿 **Exceptional years:** {sum(1 for a in anomalies if 'exceptional' in a['type'] or 'favorable' in a['type'])}")
-
+    # Health
+    lines.append(f"Based on cumulative growth consistency indices and post-stress recovery analysis, the aggregate physiological status of the specimen is classified as **{health['label'].upper()}** (Health Index: {health['score']}/100).")
+    
     return "\n".join(lines)

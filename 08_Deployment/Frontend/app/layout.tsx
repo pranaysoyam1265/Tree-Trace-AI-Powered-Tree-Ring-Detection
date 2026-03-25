@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/contexts/auth-context"
 import { SettingsProvider } from "@/lib/settings-store"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 import { AnalysisProvider } from "@/lib/contexts/analysis-context"
+import { DendroLabProvider } from "@/lib/contexts/dendrolab-context"
 import "./globals.css"
 
 const geistMono = Geist_Mono({
@@ -78,9 +79,11 @@ export default function RootLayout({
         <AuthProvider>
           <SettingsProvider>
             <AnalysisProvider>
-              <ThemeProvider attribute="data-theme" defaultTheme="forest" enableSystem={false}>
-                {children}
-              </ThemeProvider>
+              <DendroLabProvider>
+                <ThemeProvider attribute="data-theme" defaultTheme="forest" enableSystem={false}>
+                  {children}
+                </ThemeProvider>
+              </DendroLabProvider>
             </AnalysisProvider>
           </SettingsProvider>
         </AuthProvider>
