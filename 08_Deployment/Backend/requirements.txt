@@ -1,8 +1,12 @@
 fastapi
 uvicorn[standard]
 python-multipart
-numpy
+numpy<2
+pandas>=2.1,<2.3
 opencv-python-headless
 pillow
 pydantic
 psutil
+shapely>=1.7,<2
+scipy
+scikit-image

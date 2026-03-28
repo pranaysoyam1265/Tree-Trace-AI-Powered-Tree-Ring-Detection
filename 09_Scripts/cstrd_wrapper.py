@@ -27,9 +27,21 @@ if str(CSTRD_ROOT) not in sys.path:
     sys.path.insert(0, str(CSTRD_ROOT))
 
 # Direct imports — loaded once, reused across all calls (saves ~3-5s per call)
-from cross_section_tree_ring_detection.cross_section_tree_ring_detection import TreeRingDetection
-from cross_section_tree_ring_detection.utils import saving_results, save_config, chain_2_labelme_json
-from cross_section_tree_ring_detection.io import load_image as cstrd_load_image
+# Wrapped in try/except so the server can start even if there's a binary incompatibility
+try:
+    from cross_section_tree_ring_detection.cross_section_tree_ring_detection import TreeRingDetection
+    from cross_section_tree_ring_detection.utils import saving_results, save_config, chain_2_labelme_json
+    from cross_section_tree_ring_detection.io import load_image as cstrd_load_image
+    CSTRD_DIRECT_IMPORT = True
+    print("[cstrd_wrapper] Direct import OK — fast mode enabled")
+except Exception as e:
+    CSTRD_DIRECT_IMPORT = False
+    TreeRingDetection = None
+    saving_results = None
+    save_config = None
+    chain_2_labelme_json = None
+    cstrd_load_image = None
+    print(f"[cstrd_wrapper] Direct import FAILED ({e}) — falling back to subprocess mode")
 
 # Sweet spot: 1600px gives ~2-3x speedup over 2400px with minimal accuracy loss
 MAX_PROCESSING_SIZE = 1600
@@ -126,6 +138,8 @@ def _run_detection_direct(image_path, cx, cy, output_dir, params, save_imgs=Fals
     Run CS-TRD via direct Python import — no subprocess overhead.
     Returns labelme-format dict or None.
     """
+    if not CSTRD_DIRECT_IMPORT:
+        return None
     t0 = time.time()
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -182,6 +196,65 @@ def _run_detection_direct(image_path, cx, cy, output_dir, params, save_imgs=Fals
     return None
 
 
+def _run_detection_subprocess(image_path, cx, cy, output_dir, params, save_imgs=False):
+    """
+    Fallback: Run CS-TRD via subprocess when direct import is unavailable.
+    Slower (~3-5s overhead) but works regardless of binary compatibility.
+    """
+    import subprocess
+    t0 = time.time()
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    p = params.copy()
+    main_py = CSTRD_ROOT / "main.py"
+    if not main_py.exists():
+        print(f"  ERROR: CS-TRD main.py not found at {main_py}")
+        return None
+
+    cmd = [
+        sys.executable, str(main_py),
+        "--input", str(image_path),
+        "--cx", str(cx),
+        "--cy", str(cy),
+        "--output_dir", str(output_dir),
+        "--sigma", str(p.get("sigma", 3)),
+        "--th_low", str(p.get("th_low", 5)),
+        "--th_high", str(p.get("th_high", 20)),
+        "--alpha", str(p.get("alpha", 30)),
+        "--nr", str(p.get("nr", 360)),
+        "--min_chain_length", str(p.get("min_chain_length", 2)),
+    ]
+    if save_imgs:
+        cmd.append("--save_imgs")
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            cwd=str(CSTRD_ROOT)
+        )
+        elapsed = time.time() - t0
+        if result.returncode != 0:
+            print(f"  CS-TRD subprocess FAILED ({elapsed:.1f}s): {result.stderr[:200]}")
+            return None
+
+        print(f"  CS-TRD subprocess completed in {elapsed:.1f}s")
+
+        json_path = output_dir / "labelme.json"
+        if json_path.exists():
+            with open(json_path) as f:
+                return json.load(f)
+    except subprocess.TimeoutExpired:
+        print("  CS-TRD subprocess TIMEOUT (300s)")
+    except Exception as e:
+        print(f"  CS-TRD subprocess error: {e}")
+
+    return None
+
+
 def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False, params=None, mode='baseline'):
     """
     Run CS-TRD with configurable parameters and operating modes.
@@ -224,8 +297,13 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False, params=None, mode
     scaled_cy = int(round(cy * scale))
 
     # ── Primary run: Direct Python call (no subprocess) ──
-    print(f"  Running CS-TRD (direct import, {mode})...")
-    data = _run_detection_direct(proc_path, scaled_cx, scaled_cy, output_dir, p, save_imgs)
+    if CSTRD_DIRECT_IMPORT:
+        print(f"  Running CS-TRD (direct import, {mode})...")
+        data = _run_detection_direct(proc_path, scaled_cx, scaled_cy, output_dir, p, save_imgs)
+    else:
+        # Fallback to subprocess when direct import fails (e.g., numpy/pandas incompatibility)
+        print(f"  Running CS-TRD (subprocess fallback, {mode})...")
+        data = _run_detection_subprocess(proc_path, scaled_cx, scaled_cy, output_dir, p, save_imgs)
     
     has_shapes = data is not None and len(data.get('shapes', [])) > 0
 
@@ -234,7 +312,8 @@ def run_cstrd(image_path, cx, cy, output_dir, save_imgs=False, params=None, mode
         print(f"  Primary run found 0 rings, trying relaxed thresholds (th=2/10, sigma=4)...")
         relaxed_p = p.copy()
         relaxed_p.update({"th_low": 2, "th_high": 10, "sigma": 4})
-        data = _run_detection_direct(proc_path, scaled_cx, scaled_cy, output_dir, relaxed_p, save_imgs)
+        run_fn = _run_detection_direct if CSTRD_DIRECT_IMPORT else _run_detection_subprocess
+        data = run_fn(proc_path, scaled_cx, scaled_cy, output_dir, relaxed_p, save_imgs)
         has_shapes = data is not None and len(data.get('shapes', [])) > 0
         if has_shapes:
             print(f"  Relaxed params found {len(data.get('shapes', []))} rings!")
