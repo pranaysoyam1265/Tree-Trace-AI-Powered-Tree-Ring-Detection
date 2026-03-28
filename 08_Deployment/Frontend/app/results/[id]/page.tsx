@@ -162,6 +162,18 @@ export default function ResultsPage() {
       if (cached) {
         setResult(cached)
         setLoading(false)
+
+        // If the overlay was stripped from cache, fetch it from the API in the background
+        if (!cached.overlay_image_base64) {
+          try {
+            const full = await apiClient.getResult(analysisId)
+            if (full?.overlay_image_base64) {
+              setResult((prev) => prev ? { ...prev, overlay_image_base64: full.overlay_image_base64 } : full)
+            }
+          } catch {
+            // Non-fatal — overlay just won't display
+          }
+        }
         return
       }
 

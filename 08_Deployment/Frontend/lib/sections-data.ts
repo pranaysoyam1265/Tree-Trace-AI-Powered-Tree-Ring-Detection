@@ -18,19 +18,21 @@ export const techSections: TechSection[] = [
     description:
       "Automatic tree ring boundary detection powered by the CS-TRD algorithm. Our computer vision pipeline identifies ring boundaries from cross-section images with 91% precision, enabling accurate age estimation and growth analysis.",
     ascii: `
-    ┌─────────────────────────┐
-    │  CS-TRD PIPELINE         │
-    │  ┌───────┐ ┌───────┐   │
-    │  │ IMAGE │ │ PITH  │   │
-    │  └───┬───┘ └───┬───┘   │
-    │      │         │        │
-    │  ┌───┴─────────┴───┐   │
-    │  │  EDGE DETECTION  │   │
-    │  └─────────────────┘   │
-    │  ┌───────────────────┐  │
-    │  │  RING BOUNDARIES   │  │
-    │  └───────────────────┘  │
-    └─────────────────────────┘`,
+    ██████████████████████████████████████████████████████████████████████
+    █ ░▒▓                   RING DETECTION & EXTRACTION ENGINE           █
+    ██████████████████████████████████████████████████████████████████████
+    █ ┌───────────────┐   ┌─────────────────┐                            █
+    █ │ INPUT TENSOR  │   │ PITH COORDINATE │    [ RING BOUNDARIES ]     █
+    █ │ ░▒▓██████▓▒░  │   │ ░░▒▒▓▓████▓▓▒▒░ │            ▲               █
+    █ └───────┬───────┘   └────────┬────────┘            │               █
+    █         │                    │            ┌────────┴─────────────┐ █
+    █         ▼                    ▼            │ ░▒▓ POLAR TRANSFORM  │ █
+    █ ┌─────────────────────────────────────┐   │ ▓▓▓ SHORTEST PATH    │ █
+    █ │ ▓▓▒░ MULTI-SCALE CSTRD FILTER ░▒▓▓  │──▶└──────────────────────┘ █
+    █ │ ▒▒ PRE-PROCESSING (CLAHE)       ▒▒  │                            █
+    █ │ ██ ADAPTIVE OTSU / CANNY EDGE   ██  │                            █
+    █ └─────────────────────────────────────┘                            █
+    ██████████████████████████████████████████████████████████████████████`,
     specs: [
       { label: "Algorithm", value: "CS-TRD" },
       { label: "Precision", value: "91%" },
@@ -54,18 +56,20 @@ export const techSections: TechSection[] = [
     description:
       "Accurate ring width measurement from detected boundaries. Width data reveals growth patterns influenced by climate, competition, and environmental conditions — the foundation of dendrochronology research.",
     ascii: `
-    Ring #1 (inner)    Ring #2
-    ┌──────────┐      ┌──────────┐
-    │ Width: 12│─────>│ Width: 8 │
-    │ Year: '01│      │ Year: '02│
-    │ Rain: Hi │      │ Rain: Lo │
-    │ Temp: Med│      │ Temp: Hi │
-    └──────────┘      └──────────┘
-         │                  │
-    ┌────┴────┐        ┌────┴────┐
-    │ Growth  │        │ Growth  │
-    │ FAST    │        │ SLOW    │
-    └─────────┘        └─────────┘`,
+    ██████████████████████████████████████████████████████████████████████
+    █ ░▒▓                   CHRONOLOGICAL WIDTH ANALYSIS                 █
+    ██████████████████████████████████████████████████████████████████████
+    █  ░░ INNER CORE                                      OUTER BARK ▓▓  █
+    █  ██████████████║██████████║██████║████║███║██║█║█│                 █
+    █  ──────────────╨──────────╨──────╨────╨───╨──╨─╨─┴─                █
+    █  ΔR (px)  48         32       16   8   4   2   1                   █
+    █                                                                    █
+    █ ┌───────────────────┐   ┌───────────────────┐   ┌────────────────┐ █
+    █ │ ░▒ MACRO-RNG      │   │ ▓█ MICRO-RNG      │   │ ▓▒ CLIMATE MAT │ █
+    █ │ HIGH PRECIP.      │──▶│ DROUGHT EVENT     │──▶│ ██████░░░░░░░░ │ █
+    █ │ FAST GROWTH       │   │ STRESS MARKER     │   │ ▒▒▒▒▒▒▓▓▓▓░░░░ │ █
+    █ └───────────────────┘   └───────────────────┘   └────────────────┘ █
+    ██████████████████████████████████████████████████████████████████████`,
     specs: [
       { label: "Unit", value: "Pixels / mm" },
       { label: "RMSE", value: "3.47 px" },
@@ -89,20 +93,21 @@ export const techSections: TechSection[] = [
     description:
       "Rich interactive visualizations overlay detected rings on the original cross-section image. Color-coded boundaries, hover inspection, zoom and pan controls let researchers validate results intuitively.",
     ascii: `
-    Image  ──> Ring Overlay
-                    │
-             Color Assignment
-                    │
-              Render Canvas
-                    │
-              ┌──────┴──────┐
-              │  Ring View   │
-              │  ┌──┬──┬──┐ │
-              │  │R1│R2│R3│ │
-              │  ├──┼──┼──┤ │
-              │  │R4│R5│R6│ │
-              │  └──┴──┴──┘ │
-              └─────────────┘`,
+    ██████████████████████████████████████████████████████████████████████
+    █ ░▒▓                   VISUALIZATION & RENDER SYSTEM                █
+    ██████████████████████████████████████████████████████████████████████
+    █ ┌─────────────────────────────────────┐                            █
+    █ │ ░░ VECTOR POLYGON PARSER ░░         │                            █
+    █ │ ▒▒▒ JSON -> SVG / CANVAS CONTROLS   │                            █
+    █ └──────────────────┬──────────────────┘      ┌───┬───┬───┐         █
+    █                    ▼                      ┌──┘ ░ │ ▒ │ ▓ └──┐      █
+    █ ┌───────────────┐   ┌─────────────────┐ ┌─┘ ░░░░ │▒▒▒│▓▓▓▓▓ └─┐    █
+    █ │ ▓ COLOR MAP   │   │ █ LAYER BLEND   │ │ ░░  ██ │███│  ██ ▓▓ │    █
+    █ │ ▒ CYCLE GEN   │──▶│ ▓ MULTIPLY/ADD  │ │ ░░░░   │▒▒▒│   ▓▓▓▓ │    █
+    █ │ ░ OPACITY/HUE │   │ ▒ Z-INDEX SORT  │ └─┐ ░░░░ │▒▒▒│ ▓▓▓▓ ┌─┘    █
+    █ └───────────────┘   └────────┬────────┘   └──┐ ░ │ ▒ │ ▓ ┌──┘      █
+    █                              └───────────────────┴───┴───┘         █
+    ██████████████████████████████████████████████████████████████████████`,
     specs: [
       { label: "Renderer", value: "Canvas 2D" },
       { label: "Interaction", value: "Zoom / Pan / Hover" },

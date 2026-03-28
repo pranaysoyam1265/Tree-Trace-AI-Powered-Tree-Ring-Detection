@@ -20,6 +20,7 @@ export function PithStep() {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [manualX, setManualX] = useState("")
   const [manualY, setManualY] = useState("")
+  const [hoverScreenPos, setHoverScreenPos] = useState<{ x: number; y: number } | null>(null)
 
   const resetView = useCallback(() => { setZoom(1); setPan({ x: 0, y: 0 }) }, [])
 
@@ -68,11 +69,32 @@ export function PithStep() {
         y: panStart.current.panY + (e.clientY - panStart.current.y),
       })
     }
-    const onUp = () => setIsPanning(false)
+    const onUp = () => {
+      setIsPanning(false)
+      setHoverScreenPos(null)
+    }
     window.addEventListener("mousemove", onMove)
     window.addEventListener("mouseup", onUp)
     return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp) }
   }, [isPanning])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isPanning) {
+      setHoverScreenPos(null)
+      return
+    }
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    setHoverScreenPos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+  }, [isPanning])
+
+  const handleMouseLeave = useCallback(() => {
+    setHoverScreenPos(null)
+  }, [])
 
   const getPithScreenPos = useCallback(() => {
     const img = imgRef.current
@@ -107,6 +129,53 @@ export function PithStep() {
       setManualY(String(state.pith.y))
     }
   }, [state.pith])
+
+  const renderMagnifier = () => {
+    if (!hoverScreenPos || isPanning || !imgRef.current || !containerRef.current || !state.previewUrl) return null
+    const img = imgRef.current
+    const rect = containerRef.current.getBoundingClientRect()
+    const scale = Math.min(rect.width / img.naturalWidth, rect.height / img.naturalHeight) * zoom
+    const dispW = img.naturalWidth * scale
+    const dispH = img.naturalHeight * scale
+    const imgLeft = (rect.width - dispW) / 2 + pan.x
+    const imgTop = (rect.height - dispH) / 2 + pan.y
+
+    const pctX = (hoverScreenPos.x - imgLeft) / dispW
+    const pctY = (hoverScreenPos.y - imgTop) / dispH
+
+    if (pctX < -0.05 || pctX > 1.05 || pctY < -0.05 || pctY > 1.05) return null
+
+    const magZoom = 4 // 4x relative to current view
+    const bgW = dispW * magZoom
+    const bgH = dispH * magZoom
+
+    // Half of 128px (w-32)
+    const bgPosX = 64 - (pctX * bgW)
+    const bgPosY = 64 - (pctY * bgH)
+
+    return (
+      <div
+        className="absolute z-20 w-32 h-32 rounded-full border border-[#ea580c] pointer-events-none shadow-[0_0_30px_#ea580c30] bg-[#0d0d0d] overflow-hidden"
+        style={{
+          left: hoverScreenPos.x + 20,
+          top: hoverScreenPos.y > rect.height - 160 ? hoverScreenPos.y - 150 : hoverScreenPos.y + 20,
+        }}
+      >
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `url(${state.previewUrl})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: `${bgW}px ${bgH}px`,
+            backgroundPosition: `${bgPosX}px ${bgPosY}px`,
+          }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Crosshair className="w-4 h-4 text-[#ea580c] opacity-80" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full px-4 pt-6 lg:px-8">
@@ -149,9 +218,81 @@ export function PithStep() {
               ref={containerRef}
               onClick={handleClick}
               onMouseDown={onMouseDown}
-              className="relative cursor-crosshair bg-black/20 select-none"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              className="relative cursor-crosshair bg-[#050505] select-none overflow-hidden"
               style={{ height: "520px" }}
             >
+              {/* Radar Grid Background & Watermarks */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.03] flex items-center justify-between px-8 overflow-hidden z-0">
+                <span className="font-pixel text-8xl text-white -rotate-90 whitespace-nowrap -ml-32">TARGETING</span>
+                <span className="font-pixel text-8xl text-white rotate-90 whitespace-nowrap -mr-32">CALIBRATION</span>
+              </div>
+              <div
+                className="absolute pointer-events-none opacity-20 transition-all duration-300 ease-out z-0"
+                style={{
+                  left: pithPos ? pithPos.left : "50%",
+                  top: pithPos ? pithPos.top : "50%",
+                  transform: "translate(-50%, -50%)"
+                }}
+              >
+                {/* Concentric rings */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {[...Array(24)].map((_, i) => (
+                    <div
+                      key={`ring-${i}`}
+                      className={`absolute rounded-full border ${i % 4 === 0 ? "border-[#ea580c]/60" : "border-[#ea580c]/20"}`}
+                      style={{ width: `${(i + 1) * 80}px`, height: `${(i + 1) * 80}px` }}
+                    />
+                  ))}
+                </div>
+                {/* Diagonal Cross lines only */}
+                <div className="absolute -top-[2000px] -bottom-[2000px] left-1/2 w-[1px] bg-[#ea580c]/40 -translate-x-1/2 rotate-45" />
+                <div className="absolute -top-[2000px] -bottom-[2000px] left-1/2 w-[1px] bg-[#ea580c]/40 -translate-x-1/2 -rotate-45" />
+
+                {/* Sub-angle ticks */}
+                {[...Array(12)].map((_, i) => (
+                  <div
+                    key={`tick-${i}`}
+                    className="absolute -top-[2000px] -bottom-[2000px] left-1/2 w-[1px] bg-[#ea580c]/10 -translate-x-1/2"
+                    style={{ transform: `rotate(${i * 15}deg)` }}
+                  />
+                ))}
+              </div>
+
+              {/* Corner HUD Telemetry */}
+              <div className="absolute top-4 left-4 pointer-events-none z-20 flex flex-col gap-1">
+                <span className="font-mono text-[9px] text-[#ea580c] uppercase tracking-[0.2em] font-bold shadow-black drop-shadow-md">
+                  [SYS_STATE: {state.pith ? 'PITH_ACQUIRED' : 'AWAITING_PITH'}]
+                </span>
+                <span className="font-mono text-[9px] text-[#888888] tracking-widest shadow-black drop-shadow-md">
+                  X_CALIBRATION_ACTIVE
+                </span>
+              </div>
+              <div className="absolute top-4 right-4 pointer-events-none z-20 text-right flex flex-col gap-1">
+                <span className="font-mono text-[9px] text-[#a3a3a3] tracking-[0.2em] shadow-black drop-shadow-md">
+                  [RES: {imgRef.current?.naturalWidth || 0}x{imgRef.current?.naturalHeight || 0}]
+                </span>
+                <span className="font-mono text-[9px] text-[#888888] tracking-[0.2em] shadow-black drop-shadow-md">
+                  [ZOOM: {Math.round(zoom * 100)}%]
+                </span>
+              </div>
+              <div className="absolute bottom-4 left-4 pointer-events-none z-20 flex flex-col gap-1">
+                <span className="font-mono text-[9px] text-[#888888] tracking-[0.2em] shadow-black drop-shadow-md">
+                  CS-TRD // RADIAL_TRACKING
+                </span>
+              </div>
+              <div className="absolute bottom-4 right-4 pointer-events-none z-20 text-right flex flex-col items-end gap-1">
+                <span className="font-mono text-[9px] w-24 border-b border-[#ea580c]/40 pb-1 mb-1 text-[#ea580c] tracking-[0.2em] flex justify-between shadow-black drop-shadow-md">
+                  <span>X:</span>
+                  <span>{hoverScreenPos ? Math.round(hoverScreenPos.x) : '---'}</span>
+                </span>
+                <span className="font-mono text-[9px] w-24 text-[#ea580c] tracking-[0.2em] flex justify-between shadow-black drop-shadow-md">
+                  <span>Y:</span>
+                  <span>{hoverScreenPos ? Math.round(hoverScreenPos.y) : '---'}</span>
+                </span>
+              </div>
+
               {state.previewUrl && (
                 <img
                   ref={imgRef}
@@ -165,6 +306,8 @@ export function PithStep() {
                   }}
                 />
               )}
+
+              {renderMagnifier()}
 
               {/* Pith Marker */}
               {pithPos && (

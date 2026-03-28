@@ -105,7 +105,7 @@ export function RingSummary({ result }: Props) {
             { label: "RECALL", value: result.metrics.recall ? result.metrics.recall.toFixed(2) : "N/A", icon: BarChart3, tip: "The percentage of true rings successfully identified by the CS-TRD model." },
             { label: "F1 SCORE", value: result.metrics.f1_score ? result.metrics.f1_score.toFixed(2) : "N/A", icon: Target, tip: "Combined harmonic mean of precision and recall. High F1 means the AI traced unbroken valid boundaries." },
             { label: "RMSE", value: result.metrics.rmse ? `${result.metrics.rmse}px` : "N/A", icon: Ruler, tip: "Root Mean Square Error. The average pixel deviation of the detected boundary from an ideal ring." },
-            { label: "PROCESSING", value: `${result.processing_time_seconds}s`, icon: Clock, tip: "Total chronological time taken by the backend server to execute the CS-TRD algorithm." },
+            { label: "PROCESSING", value: `${Number(result.processing_time_seconds).toFixed(1)}s`, icon: Clock, tip: "Total chronological time taken by the backend server to execute the CS-TRD algorithm." },
           ].map(({ label, value, icon: Icon, tip }) => (
             <div key={label} className="flex flex-col gap-1 border border-border/50 bg-surface/50 p-3">
               <span className="font-mono text-[10px] uppercase tracking-[1px] text-muted-foreground flex items-center justify-between">

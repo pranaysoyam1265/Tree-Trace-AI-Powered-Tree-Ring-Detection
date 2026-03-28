@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { FileSpreadsheet, FileJson, Image, FileText, Loader2, Check, Download } from "lucide-react"
 import type { AnalysisResult } from "@/lib/types"
-import { exportCSV, exportJSON } from "@/lib/export"
+import { exportCSV, exportJSON, exportOverlayPNG, exportPDF } from "@/lib/export"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -28,10 +28,12 @@ export function ExportPanel({ result }: Props) {
         exportJSON(result)
         break
       case "png":
-        alert("PNG export will capture the ring visualization in the final build.")
+        if (!exportOverlayPNG(result)) {
+          alert("Overlay image not available yet. Please wait for the overlay to load, then try again.")
+        }
         break
       case "pdf":
-        alert("PDF report generation will be available in the final build.")
+        exportPDF(result)
         break
     }
 

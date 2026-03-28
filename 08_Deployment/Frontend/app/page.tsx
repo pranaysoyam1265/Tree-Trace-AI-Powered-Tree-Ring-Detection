@@ -1,6 +1,5 @@
 import { Navigation } from "@/components/ascii-hub/navigation"
 import { HeroSection } from "@/components/ascii-hub/hero-section"
-import { HowItWorksSection } from "@/components/ascii-hub/how-it-works"
 import { DomainSection } from "@/components/ascii-hub/domain-section"
 import { TechTicker } from "@/components/ascii-hub/tech-ticker"
 import { PseudoTerminal } from "@/components/ascii-hub/pseudo-terminal"
@@ -16,8 +15,6 @@ export default function Home() {
         <HeroSection />
 
         <TechTicker />
-
-        <HowItWorksSection />
 
         {techSections.map((section, index) => (
           <DomainSection

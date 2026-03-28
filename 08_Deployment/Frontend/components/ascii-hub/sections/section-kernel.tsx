@@ -172,8 +172,17 @@ export function SectionKernel({ section }: { section: TechSection }) {
               Architecture Schematic
             </span>
           </div>
-          <pre className="overflow-x-auto p-6 font-mono text-xs leading-relaxed text-text-terminal-dim">
-            {section.ascii}
+          <pre className="overflow-x-auto p-6 font-mono text-xs leading-[1.1] tracking-tight">
+            {section.ascii.split('\n').map((line, i) => (
+              <div key={i}>
+                {line.split('').map((char, j) => {
+                  if ('█▓▒░┌┐└┘├┤┬┴┼─│║═╔╗╚╝╠╣╦╩╬╨▶▼▲◀─││'.includes(char)) {
+                    return <span key={j} className="text-[#666666]">{char}</span>
+                  }
+                  return <span key={j} className="text-white">{char}</span>
+                })}
+              </div>
+            ))}
           </pre>
         </div>
       </motion.div>

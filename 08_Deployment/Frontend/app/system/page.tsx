@@ -47,9 +47,16 @@ export default function SystemStatusPage() {
     { name: 'LATAM-SOUTH-01', status: 'Online', latency: '112ms', load: 78 }
   ])
 
+  const backendOfflineRef = useRef(false)
+
   const fetchSystemData = async () => {
     try {
       const data = await apiClient.getSystemStatus()
+
+      if (backendOfflineRef.current) {
+        backendOfflineRef.current = false
+        console.log("[SystemStatus] Backend reconnected")
+      }
 
       setCpuLoad(data.cpu_load)
       setGpuLoad(data.gpu_load)
@@ -58,9 +65,11 @@ export default function SystemStatusPage() {
       if (data.active_nodes && data.active_nodes.length > 0) {
         setActiveNodes(data.active_nodes)
       }
-    } catch (err) {
-      console.error("Failed to fetch system data:", err)
-      // Fallback/offline visual indication could be added here
+    } catch {
+      if (!backendOfflineRef.current) {
+        backendOfflineRef.current = true
+        console.warn("[SystemStatus] Backend offline — suppressing further poll errors")
+      }
     }
   }
 

@@ -44,3 +44,4 @@ else:
 # Add existing code directories to Python path so they can be imported
 sys.path.insert(0, str(STREAMLIT_UTILS))
 sys.path.insert(0, str(SCRIPTS_DIR))
+sys.path.insert(0, str(CSTRD_ROOT))  # CS-TRD direct import path

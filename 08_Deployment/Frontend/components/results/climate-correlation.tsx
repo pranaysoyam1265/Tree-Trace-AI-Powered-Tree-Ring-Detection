@@ -49,7 +49,7 @@ function pearsonR(x: number[], y: number[]): number {
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 function parseClimateCSV(text: string): { rows: ClimateRow[]; isMonthly: boolean; variable: string } {
-  const lines = text.trim().split("\n").map(l => l.trim()).filter(Boolean)
+  const lines = text.trim().split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#"))
   if (lines.length < 2) throw new Error("CSV must have a header row and at least one data row")
 
   const header = lines[0].toLowerCase().split(/[,\t;]+/).map(h => h.trim())
@@ -197,7 +197,7 @@ function downloadTemplate() {
 // ── Demo Data Generator ──
 
 function generateDemoClimate(years: number[]) {
-  const header = "year,jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
+  const headerWithVar = "# Climate Data for Correlation Analysis\n# Variable: Rainfall\n# Unit: mm\nyear,jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
   const rows = years.map(y => {
     // Simulate a severe drought roughly in the middle of the dataset
     const isDrought = y === years[Math.floor(years.length / 2)]
@@ -205,8 +205,6 @@ function generateDemoClimate(years: number[]) {
     const vals = Array.from({ length: 12 }, () => (Math.random() * baseVal + baseVal / 2).toFixed(1))
     return `${y},${vals.join(",")}`
   })
-  // Let's pretend it's precipitation
-  const headerWithVar = "year,jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
   return [headerWithVar, ...rows].join("\n")
 }
 
@@ -356,23 +354,36 @@ export function ClimateCorrelation({ result }: Props) {
       <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[3px] border-r-[3px] border-accent z-20 pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b-[3px] border-border bg-surface px-5 py-3">
-        <div className="flex items-center gap-2">
-          <CloudRain className="h-3.5 w-3.5 text-accent" />
-          <span className="font-mono text-xs uppercase font-bold text-accent tracking-[1px]">
-            [ENVIRONMENTAL_TIMELINE]
-          </span>
+      <div className="flex flex-col border-b-[3px] border-border bg-surface">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <CloudRain className="h-3.5 w-3.5 text-accent" />
+            <span className="font-mono text-xs uppercase font-bold text-accent tracking-[1px]">
+              [ENVIRONMENTAL_TIMELINE & EVENTS]
+            </span>
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="text-muted-foreground hover:text-accent transition-colors">
+                <Info className="h-3.5 w-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="max-w-[260px] border border-accent/20 bg-background font-mono text-[10px] leading-relaxed p-3">
+              Upload climate history to visualize environmental impact directly on top of the tree ring growth chronology. This visually reveals how weather events affect radial growth over time.
+            </PopoverContent>
+          </Popover>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="text-muted-foreground hover:text-accent transition-colors">
-              <Info className="h-3.5 w-3.5" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="max-w-[260px] border border-accent/20 bg-background font-mono text-[10px] leading-relaxed p-3">
-            Upload climate history to visualize environmental impact directly on top of the tree ring growth chronology. This visually reveals how weather events affect radial growth over time.
-          </PopoverContent>
-        </Popover>
+
+        {/* Climate context explanation */}
+        <div className="px-5 py-4 bg-background/50 flex items-start border-b border-border/30 relative">
+          <div className="w-1 h-full bg-accent absolute left-0 top-0 bottom-0 opacity-50" />
+          <p className="font-mono text-[12px] text-muted-foreground leading-relaxed w-full">
+            <strong className="text-foreground">CLIMATE VARIABLES & RADIAL GROWTH:</strong> Tree rings act as biological weather stations.
+            Wide rings generally indicate favorable growing conditions (e.g., high precipitation, optimal temperatures),
+            while narrow rings point to environmental stress (e.g., severe droughts, extreme cold). Correlating these variables
+            reveals the exact historical climate factors that governed this specimen&apos;s life.
+          </p>
+        </div>
       </div>
 
       {/* Upload Area */}
@@ -395,7 +406,7 @@ export function ClimateCorrelation({ result }: Props) {
                 onClick={handleLoadDemo}
                 className="border-2 border-border bg-surface text-foreground font-bold px-5 py-2.5 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent transition-colors"
               >
-                Auto-Generate Demo Data
+                Generate CSV data for {result.image_name ? result.image_name.replace(/\.[^/.]+$/, "") : "this given image"}
               </button>
               <button
                 onClick={downloadTemplate}
@@ -486,52 +497,64 @@ export function ClimateCorrelation({ result }: Props) {
           {/* Climate Event Summary */}
           <div className="border-t-[3px] border-border">
 
-            {/* Section Header */}
-            <div className="flex items-center gap-2 bg-surface/50 px-4 py-2 border-b border-border/30">
-              <CloudRain className="h-3.5 w-3.5 text-accent" />
-              <span className="font-mono text-[10px] uppercase tracking-[2px] font-bold text-accent">Climate Event Summary</span>
-            </div>
+            {/* Key Metrics Row (Redesigned Info Cards) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 bg-surface/5">
 
-            {/* Key Metrics Row */}
-            <div className="grid grid-cols-3 bg-surface/10">
-              {/* Peak */}
-              <div className="flex flex-col items-center py-5 gap-1.5 border-r border-border/20 relative">
-                <div className="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-1">
+              {/* Peak Card */}
+              <div className="flex flex-col p-6 border-b md:border-b-0 md:border-r border-border/30 hover:bg-surface/10 transition-colors">
+                <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="h-4 w-4 text-blue-400" />
+                  <span className="font-mono text-[10px] uppercase tracking-[2px] text-muted-foreground font-bold">PEAK {analysis.variable}</span>
                 </div>
-                <span className="font-mono text-[8px] uppercase tracking-[2px] text-muted-foreground">Peak {analysis.variable}</span>
-                <span className="font-mono text-2xl font-bold text-blue-400 tabular-nums">{analysis.extremes.maxClimate.value.toFixed(1)}</span>
-                <span className="font-mono text-[9px] text-muted-foreground">{analysis.unit} in <strong className="text-foreground">{analysis.extremes.maxClimate.year}</strong></span>
-                <p className="font-mono text-[8px] text-muted-foreground/50 text-center px-3 mt-1 leading-relaxed">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="font-mono text-4xl font-bold text-blue-400 tabular-nums">{analysis.extremes.maxClimate.value.toFixed(1)}</span>
+                  <span className="font-mono text-[11px] text-muted-foreground">{analysis.unit}</span>
+                </div>
+                <div className="font-mono text-xs text-foreground mb-4">
+                  Recorded in <strong className="bg-blue-500/10 text-blue-400 px-1 py-0.5">{analysis.extremes.maxClimate.year}</strong>
+                </div>
+                <p className="font-mono text-[10px] text-muted-foreground/70 leading-relaxed mt-auto border-t border-border/20 pt-3">
                   {analysis.variable === "Precipitation"
-                    ? "Wettest year on record. High rainfall typically promotes wider ring formation."
-                    : "Warmest year recorded. Elevated temperatures can accelerate or inhibit growth."}
+                    ? "Wettest year on record. High rainfall typically promotes vigorous, wide ring formation."
+                    : "Warmest year recorded. Elevated temperatures can either accelerate or inhibit growth depending on the species."}
                 </p>
               </div>
-              {/* Lowest */}
-              <div className="flex flex-col items-center py-5 gap-1.5 border-r border-border/20 relative">
-                <div className="w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-1">
+
+              {/* Lowest Card */}
+              <div className="flex flex-col p-6 border-b md:border-b-0 md:border-r border-border/30 hover:bg-surface/10 transition-colors">
+                <div className="flex items-center gap-2 mb-4">
                   <TrendingDown className="h-4 w-4 text-red-400" />
+                  <span className="font-mono text-[10px] uppercase tracking-[2px] text-muted-foreground font-bold">LOWEST {analysis.variable}</span>
                 </div>
-                <span className="font-mono text-[8px] uppercase tracking-[2px] text-muted-foreground">Lowest {analysis.variable}</span>
-                <span className="font-mono text-2xl font-bold text-red-400 tabular-nums">{analysis.extremes.minClimate.value.toFixed(1)}</span>
-                <span className="font-mono text-[9px] text-muted-foreground">{analysis.unit} in <strong className="text-foreground">{analysis.extremes.minClimate.year}</strong></span>
-                <p className="font-mono text-[8px] text-muted-foreground/50 text-center px-3 mt-1 leading-relaxed">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="font-mono text-4xl font-bold text-red-400 tabular-nums">{analysis.extremes.minClimate.value.toFixed(1)}</span>
+                  <span className="font-mono text-[11px] text-muted-foreground">{analysis.unit}</span>
+                </div>
+                <div className="font-mono text-xs text-foreground mb-4">
+                  Recorded in <strong className="bg-red-500/10 text-red-400 px-1 py-0.5">{analysis.extremes.minClimate.year}</strong>
+                </div>
+                <p className="font-mono text-[10px] text-muted-foreground/70 leading-relaxed mt-auto border-t border-border/20 pt-3">
                   {analysis.variable === "Precipitation"
-                    ? "Driest year recorded. Severe water deficit often produces the narrowest rings."
-                    : "Coldest year recorded. Frost damage may cause missing or false ring formation."}
+                    ? "Driest year recorded. Severe water deficit often produces the narrowest rings and stress markers."
+                    : "Coldest year recorded. Frost damage may cause missing rings or false ring formation."}
                 </p>
               </div>
-              {/* Average */}
-              <div className="flex flex-col items-center py-5 gap-1.5 relative">
-                <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center mb-1">
+
+              {/* Average Card */}
+              <div className="flex flex-col p-6 hover:bg-surface/10 transition-colors">
+                <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="h-4 w-4 text-accent" />
+                  <span className="font-mono text-[10px] uppercase tracking-[2px] text-muted-foreground font-bold">HISTORICAL AVERAGE</span>
                 </div>
-                <span className="font-mono text-[8px] uppercase tracking-[2px] text-muted-foreground">Average {analysis.variable}</span>
-                <span className="font-mono text-2xl font-bold text-foreground tabular-nums">{analysis.extremes.climMean.toFixed(1)}</span>
-                <span className="font-mono text-[9px] text-muted-foreground">{analysis.unit} ({"\u00b1"}{analysis.extremes.climStd.toFixed(1)} std)</span>
-                <p className="font-mono text-[8px] text-muted-foreground/50 text-center px-3 mt-1 leading-relaxed">
-                  Baseline {analysis.variable.toLowerCase()} across the observed period. Years deviating beyond 1{"\u03c3"} are flagged below.
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="font-mono text-4xl font-bold text-foreground tabular-nums">{analysis.extremes.climMean.toFixed(1)}</span>
+                  <span className="font-mono text-[11px] text-muted-foreground">{analysis.unit}</span>
+                </div>
+                <div className="font-mono text-xs text-muted-foreground mb-4">
+                  Volatility: ±{analysis.extremes.climStd.toFixed(1)} {analysis.unit} (1σ)
+                </div>
+                <p className="font-mono text-[10px] text-muted-foreground/70 leading-relaxed mt-auto border-t border-border/20 pt-3">
+                  Baseline {analysis.variable.toLowerCase()} across the entire observed period. Years deviating beyond 1 standard deviation are flagged below as extreme events.
                 </p>
               </div>
             </div>
@@ -539,22 +562,22 @@ export function ClimateCorrelation({ result }: Props) {
             {/* Drought & Excess Year Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 border-t-[2px] border-border">
               {/* Drought Card */}
-              <div className="border-b lg:border-b-0 lg:border-r border-border/30 p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 bg-red-500/15 border border-red-500/25 flex items-center justify-center">
-                    <Droplets className="h-3 w-3 text-red-400" />
+              <div className="border-b lg:border-b-0 lg:border-r border-border/30 p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 bg-red-500/15 border border-red-500/25 flex items-center justify-center">
+                    <Droplets className="h-4 w-4 text-red-400" />
                   </div>
                   <div>
-                    <span className="font-mono text-[10px] uppercase tracking-[1.5px] text-red-400 font-bold block">
+                    <span className="font-mono text-[11px] uppercase tracking-[1.5px] text-red-400 font-bold block">
                       {analysis.variable === "Precipitation" ? "Drought Years" : "Cold Stress Years"}
                     </span>
-                    <span className="font-mono text-[9px] text-muted-foreground/60">
+                    <span className="font-mono text-[10px] text-muted-foreground/70">
                       {analysis.variable} {"<"} {(analysis.extremes.climMean - analysis.extremes.climStd).toFixed(0)} {analysis.unit} (below 1{"\u03c3"})
                     </span>
                   </div>
-                  <span className="ml-auto font-mono text-lg font-bold text-red-400 tabular-nums">{analysis.extremes.droughtYears.length}</span>
+                  <span className="ml-auto font-mono text-2xl font-bold text-red-400 tabular-nums">{analysis.extremes.droughtYears.length}</span>
                 </div>
-                <p className="font-mono text-[9px] text-muted-foreground/60 leading-relaxed mb-3">
+                <p className="font-mono text-[10px] text-muted-foreground/70 leading-relaxed mb-4">
                   {analysis.variable === "Precipitation"
                     ? "Years with rainfall significantly below the long-term average. Drought conditions limit water availability to the cambium, producing characteristically narrow rings and potential stress markers."
                     : "Years with temperatures well below average. Prolonged cold can shorten the growing season, cause frost damage to the cambium, and produce anomalously narrow or malformed rings."}
@@ -562,31 +585,31 @@ export function ClimateCorrelation({ result }: Props) {
                 {analysis.extremes.droughtYears.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {analysis.extremes.droughtYears.map(y => (
-                      <span key={y} className="font-mono text-[11px] bg-red-500/10 border border-red-500/20 text-red-400 px-2.5 py-1 tabular-nums font-bold">{y}</span>
+                      <span key={y} className="font-mono text-xs bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 tabular-nums font-bold">{y}</span>
                     ))}
                   </div>
                 ) : (
-                  <span className="font-mono text-[10px] text-muted-foreground/50 italic">No extreme low-{analysis.variable.toLowerCase()} years detected in this period.</span>
+                  <span className="font-mono text-[11px] text-muted-foreground/60 italic">No extreme low-{analysis.variable.toLowerCase()} years detected in this period.</span>
                 )}
               </div>
 
               {/* Excess Card */}
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 bg-blue-500/15 border border-blue-500/25 flex items-center justify-center">
-                    <CloudRain className="h-3 w-3 text-blue-400" />
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 bg-blue-500/15 border border-blue-500/25 flex items-center justify-center">
+                    <CloudRain className="h-4 w-4 text-blue-400" />
                   </div>
                   <div>
-                    <span className="font-mono text-[10px] uppercase tracking-[1.5px] text-blue-400 font-bold block">
+                    <span className="font-mono text-[11px] uppercase tracking-[1.5px] text-blue-400 font-bold block">
                       {analysis.variable === "Precipitation" ? "Excess Rainfall Years" : "Heat Stress Years"}
                     </span>
-                    <span className="font-mono text-[9px] text-muted-foreground/60">
+                    <span className="font-mono text-[10px] text-muted-foreground/70">
                       {analysis.variable} {">"} {(analysis.extremes.climMean + analysis.extremes.climStd).toFixed(0)} {analysis.unit} (above 1{"\u03c3"})
                     </span>
                   </div>
-                  <span className="ml-auto font-mono text-lg font-bold text-blue-400 tabular-nums">{analysis.extremes.excessYears.length}</span>
+                  <span className="ml-auto font-mono text-2xl font-bold text-blue-400 tabular-nums">{analysis.extremes.excessYears.length}</span>
                 </div>
-                <p className="font-mono text-[9px] text-muted-foreground/60 leading-relaxed mb-3">
+                <p className="font-mono text-[10px] text-muted-foreground/70 leading-relaxed mb-4">
                   {analysis.variable === "Precipitation"
                     ? "Years with rainfall significantly above average. Excess moisture can promote vigorous growth in well-drained soils, but in poorly drained sites it may cause root hypoxia and fungal pathogenesis."
                     : "Years with temperatures well above average. Heat stress can accelerate evapotranspiration, deplete soil moisture reserves, and reduce net photosynthetic gain despite a longer growing season."}
@@ -594,11 +617,11 @@ export function ClimateCorrelation({ result }: Props) {
                 {analysis.extremes.excessYears.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {analysis.extremes.excessYears.map(y => (
-                      <span key={y} className="font-mono text-[11px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2.5 py-1 tabular-nums font-bold">{y}</span>
+                      <span key={y} className="font-mono text-xs bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1.5 tabular-nums font-bold">{y}</span>
                     ))}
                   </div>
                 ) : (
-                  <span className="font-mono text-[10px] text-muted-foreground/50 italic">No extreme high-{analysis.variable.toLowerCase()} years detected in this period.</span>
+                  <span className="font-mono text-[11px] text-muted-foreground/60 italic">No extreme high-{analysis.variable.toLowerCase()} years detected in this period.</span>
                 )}
               </div>
             </div>

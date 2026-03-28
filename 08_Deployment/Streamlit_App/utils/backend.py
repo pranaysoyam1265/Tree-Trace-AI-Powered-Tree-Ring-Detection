@@ -84,9 +84,9 @@ def run_detection(image_path, cx, cy, output_dir):
         "--root", str(CSTRD_ROOT),
         "--hsize", str(img_h),
         "--wsize", str(img_w),
-        "--th_low", "3",
-        "--th_high", "15",
-        "--sigma", "3",
+        "--th_low", "5",    # Original CSTRD demo default
+        "--th_high", "20",   # Original CSTRD demo default
+        "--sigma", "3",      # Original CSTRD demo default
     ]
 
     result = subprocess.run(cmd, cwd=str(CSTRD_ROOT), capture_output=True, text=True)

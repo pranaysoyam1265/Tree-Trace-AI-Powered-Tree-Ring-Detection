@@ -271,16 +271,21 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
     [isPanning, getMousePos, transformedRings, onSelectRing, selectedRing]
   )
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
-      e.preventDefault()
+  /* ── Native Wheel Event (prevents page scroll) ── */
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const handleNativeWheel = (e: WheelEvent) => {
+      e.preventDefault() // reliably stops page scroll
       setZoom((z) => {
         const delta = e.deltaY > 0 ? -0.15 : 0.15
         return Math.max(0.5, Math.min(4, z + delta))
       })
-    },
-    []
-  )
+    }
+    // passive: false is required to allow preventDefault()
+    canvas.addEventListener("wheel", handleNativeWheel, { passive: false })
+    return () => canvas.removeEventListener("wheel", handleNativeWheel)
+  }, [])
 
   /* ── Export PNG ── */
   const exportPng = useCallback(() => {
@@ -385,7 +390,6 @@ export function RingBoundaryMap({ result, selectedRing, onSelectRing }: Props) {
           onMouseUp={handleMouseUp}
           onMouseLeave={() => { setHoveredRing(null); setIsPanning(false); panStart.current = null }}
           onClick={handleClick}
-          onWheel={handleWheel}
         />
 
         {/* Hover tooltip (top-left) */}

@@ -13,7 +13,10 @@ const RESULT_PREFIX = "treetrace_result_"
 /** Save a full analysis result after API returns it */
 export function cacheResult(result: AnalysisResult): void {
   try {
-    localStorage.setItem(`${RESULT_PREFIX}${result.id}`, JSON.stringify(result))
+    // Strip large base64 fields before caching — they can be 15-20MB
+    // and localStorage has a 5MB limit. The overlay can be re-fetched from the API.
+    const { overlay_image_base64, ...cacheable } = result as AnalysisResult & { overlay_image_base64?: string }
+    localStorage.setItem(`${RESULT_PREFIX}${result.id}`, JSON.stringify(cacheable))
   } catch {
     console.warn("localStorage quota exceeded, result not cached")
   }

@@ -37,7 +37,7 @@ async def analyze_image(
     alpha: Optional[int] = Form(default=None),
     min_chain_length: Optional[int] = Form(default=None),
     preset: Optional[str] = Form(default="auto"),
-    mode: Optional[str] = Form(default="adaptive"),
+    mode: Optional[str] = Form(default="baseline"),
 ):
     """
     Run complete ring detection and analysis on an uploaded tree cross-section image.
@@ -100,7 +100,11 @@ async def analyze_image(
             print(f"  [PREPROCESS] {line}")
 
         # Build detection params: user overrides > preprocessing auto-params
-        detection_params = auto_params.copy()
+        # In baseline mode, only use user overrides (not auto-params) to match original CSTRD demo
+        if mode == "baseline":
+            detection_params = {}
+        else:
+            detection_params = auto_params.copy()
         user_overrides = {
             "sigma": sigma,
             "th_low": th_low,
@@ -115,36 +119,35 @@ async def analyze_image(
 
         print(f"  [ANALYZE] Detection params: {detection_params}")
 
-        # STEP 1: Run CS-TRD detection on preprocessed image
+        # STEP 1: Single-pass detection — use user's chosen mode directly
+        # When pith was manually provided, use the raw image for best accuracy.
+        # When pith was auto-detected, use the preprocessed image + adjusted coordinates.
+        if pith_auto_detected:
+            detect_image = processed_path
+            detect_cx = final_cx
+            detect_cy = final_cy
+        else:
+            detect_image = saved_image_path
+            detect_cx = cx if cx is not None else final_cx
+            detect_cy = cy if cy is not None else final_cy
+
+        print(f"  [ANALYZE] Running CS-TRD ({mode} mode, single-pass)...")
         detection_result = run_detection_for_upload(
-            image_path=processed_path,
-            cx=final_cx,
-            cy=final_cy,
+            image_path=detect_image,
+            cx=detect_cx,
+            cy=detect_cy,
             analysis_id=analysis_id,
-            params=detection_params,
+            params=detection_params if mode != "baseline" else None,
             mode=mode,
         )
 
-        if detection_result is None or not detection_result.get('shapes'):
-            # FALLBACK: Try detection on original (unprocessed) image
-            print("  [ANALYZE] Preprocessed image failed detection -- retrying with original image...")
-            fallback_cx = cx if cx is not None else final_cx
-            fallback_cy = cy if cy is not None else final_cy
-            detection_result = run_detection_for_upload(
-                image_path=saved_image_path,
-                cx=fallback_cx,
-                cy=fallback_cy,
-                analysis_id=analysis_id + "_fallback",
-                params=detection_params,
-                mode=mode,
-            )
-            if detection_result and detection_result.get('shapes'):
-                preprocessing_log.append("FALLBACK: Used original image (preprocessing made detection worse)")
-                final_cx = fallback_cx
-                final_cy = fallback_cy
+        ring_count = len(detection_result.get('shapes', [])) if detection_result else 0
+        print(f"  [ANALYZE] Detection found {ring_count} rings")
+        final_cx = detect_cx
+        final_cy = detect_cy
 
         if detection_result is None or not detection_result.get('shapes'):
-            detail_msg = "Ring detection failed after preprocessing. "
+            detail_msg = "Ring detection failed. "
             detail_msg += f"Preprocessing steps: {', '.join(preprocessing_log)}. "
             detail_msg += f"Params used: sigma={detection_params.get('sigma')}, th={detection_params.get('th_low')}/{detection_params.get('th_high')}. "
             detail_msg += "Try different species preset or adjust detection parameters in Settings."

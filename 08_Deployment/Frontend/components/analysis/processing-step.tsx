@@ -59,9 +59,6 @@ export function ProcessingStep() {
   }, [logLines])
 
   useEffect(() => {
-    cancelledRef.current = false
-    let cancelled = false
-
     const addLog = (text: string, type: "info" | "ok" | "dim" | "err" = "info") => {
       setLogLines((prev) => [...prev, { text, type }])
     }
@@ -126,26 +123,31 @@ export function ProcessingStep() {
 
         const result = await apiClient.analyze(formData, abortController.signal)
 
-        if (cancelled || cancelledRef.current) return
+        // NOTE: Do NOT check cancelledRef here — StrictMode cleanup sets it to true
+        // but the result is still valid and we want to navigate.
+        console.log("[ProcessingStep] API returned successfully, ring_count:", result?.ring_count)
 
-        cacheResult(result)
+        // Cache result (non-blocking — errors here should NOT prevent navigation)
+        try {
+          cacheResult(result)
+        } catch (cacheErr) {
+          console.warn("[ProcessingStep] cacheResult failed (non-fatal):", cacheErr)
+        }
 
         addLog("")
         addLog(`[  OK  ] Analysis complete — ${result.ring_count} ring boundaries detected.`, "ok")
-        addLog(`[  OK  ] Health score: ${result.health.score}/100 (${result.health.label})`, "ok")
-        addLog(`[  OK  ] Processing time: ${result.processing_time_seconds}s`, "ok")
+        addLog(`[  OK  ] Health score: ${result.health?.score ?? "N/A"}/100 (${result.health?.label ?? "N/A"})`, "ok")
+        addLog(`[  OK  ] Processing time: ${Number(result.processing_time_seconds).toFixed(1)}s`, "ok")
 
         setResult(result.id)
 
         if (timerRef.current) clearInterval(timerRef.current)
         setTimeout(() => {
-          if (!cancelledRef.current) {
-            router.push(`/results/${result.id}`)
-          }
+          router.push(`/results/${result.id}`)
         }, 800)
 
       } catch (error: unknown) {
-        if (cancelled || cancelledRef.current) return
+        if (cancelledRef.current) return
 
         const message = error instanceof Error ? error.message : "Analysis failed"
 
@@ -163,7 +165,7 @@ export function ProcessingStep() {
     }
 
     run()
-    return () => { cancelled = true; cancelledRef.current = true }
+    return () => { cancelledRef.current = true }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCancel = useCallback(() => {

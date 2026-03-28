@@ -1,5 +1,5 @@
 """
-Detection service — wraps existing cstrd_wrapper.py
+Detection service — wraps existing cstrd_wrapper.py (optimized: direct import)
 """
 import sys
 import importlib
@@ -8,8 +8,11 @@ from config import SCRIPTS_DIR, CSTRD_ROOT, API_RESULTS_DIR
 import cv2
 import base64
 
+# Ensure CS-TRD package is importable for the direct import path in cstrd_wrapper
+if str(CSTRD_ROOT) not in sys.path:
+    sys.path.insert(0, str(CSTRD_ROOT))
+
 # Import existing wrapper
-# cstrd_wrapper.py is in SCRIPTS_DIR which is on sys.path via config.py
 import cstrd_wrapper
 
 def run_detection_for_upload(
@@ -18,7 +21,7 @@ def run_detection_for_upload(
     cy: int,
     analysis_id: str,
     params: dict | None = None,
-    mode: str = "adaptive",
+    mode: str = "baseline",
 ) -> dict | None:
     """
     Run CS-TRD detection on an uploaded image.
@@ -34,12 +37,13 @@ def run_detection_for_upload(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Use the existing optimized run_cstrd function
+    # save_imgs=False by default for speed; overlay generated separately below
     result = cstrd_wrapper.run_cstrd(
         image_path=image_path,
         cx=cx,
         cy=cy,
         output_dir=output_dir,
-        save_imgs=True,
+        save_imgs=True,  # Need output.png for the overlay
         params=params,
         mode=mode,
     )

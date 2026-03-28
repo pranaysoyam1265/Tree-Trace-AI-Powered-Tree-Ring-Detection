@@ -68,7 +68,7 @@ const initialState: AnalysisState = {
   progress: 0,
   resultId: null,
   error: null,
-  detectionMode: "adaptive",
+  detectionMode: "baseline",
 }
 
 function reducer(state: AnalysisState, action: Action): AnalysisState {

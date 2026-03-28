@@ -158,12 +158,12 @@ export function UploadStep() {
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
-              className="group relative cursor-pointer min-h-[320px] flex flex-col justify-center"
+              className="group relative cursor-crosshair min-h-[320px] flex flex-col justify-center"
             >
               {/* Animated border container */}
               <div className={`absolute inset-0 border-2 border-dashed transition-all duration-500 ${dragOver
-                ? "border-[#ea580c] shadow-[inset_0_0_30px_#ea580c15,0_0_60px_#ea580c10]"
-                : "border-[#333333] group-hover:border-[#ea580c]/40"
+                ? "border-[#ea580c] shadow-[inset_0_0_40px_rgba(234,88,12,0.2),0_0_80px_rgba(234,88,12,0.15)] scale-[1.02]"
+                : "border-[#333333] group-hover:border-[#ea580c]/60 group-hover:shadow-[inset_0_0_20px_rgba(234,88,12,0.05)]"
                 }`}>
                 {/* Corner brackets */}
                 <div className="absolute -top-[1px] -left-[1px] w-5 h-5 border-t-2 border-l-2 border-[#ea580c]/60" />
